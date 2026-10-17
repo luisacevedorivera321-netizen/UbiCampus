@@ -21,8 +21,14 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
-    /* Fondo con gradiente azul profesional */
-    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+    
+    /* Aquí agregamos la imagen con un filtro azul oscuro semitransparente encima */
+    /* CAMBIA 'tu-imagen.jpg' por el nombre real de tu archivo */
+    background-image: linear-gradient(rgba(30, 58, 138, 0.8), rgba(59, 130, 246, 0.6)), url('CAMPUS.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
 }
 
 .login-box {
