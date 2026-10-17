@@ -15,84 +15,96 @@ body {
     display: none !important;
 }
 
-/* --- ESTILOS DE LA PANTALLA DE ACCESO --- */
+/* --- ESTILOS DE LA PANTALLA DE ACCESO (PANTALLA DIVIDIDA) --- */
 #login-container {
     display: flex;
-    justify-content: center;
-    align-items: center;
     height: 100vh;
-    
-    /* Aquí agregamos la imagen con un filtro azul oscuro semitransparente encima */
-    /* CAMBIA 'tu-imagen.jpg' por el nombre real de tu archivo */
-    background-image: linear-gradient(rgba(30, 58, 138, 0.8), rgba(59, 130, 246, 0.6)), url('CAMPUS.jpg');
+    width: 100%;
+}
+
+/* Mitad izquierda con la imagen */
+.login-image {
+    flex: 1; /* Ocupa la mitad de la pantalla */
+    background-image: url('CAMPUS.jpg'); /* Aquí está tu imagen */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+    box-shadow: inset -10px 0 20px rgba(0,0,0,0.05); /* Sombra ligera para separar del blanco */
 }
+
+/* Mitad derecha con el formulario */
+.login-form-section {
+    flex: 1; /* Ocupa la otra mitad */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #ffffff; /* Fondo totalmente blanco */
 }
 
 .login-box {
-    background-color: white;
+    width: 100%;
+    max-width: 420px; /* Ancho máximo para que se vea formal */
     padding: 40px;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-    width: 90%;
-    max-width: 400px;
 }
 
+/* Textos más elegantes */
 .logo {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 40px;
 }
 
 .logo h2 {
-    color: #1e3a8a;
-    font-size: 28px;
-    margin-bottom: 5px;
+    color: #1e3a8a; /* Azul institucional */
+    font-size: 32px;
+    margin-bottom: 8px;
+    font-weight: 700;
 }
 
 .logo p {
     color: #6b7280;
-    font-size: 14px;
+    font-size: 15px;
 }
 
 .input-group {
-    margin-bottom: 20px;
+    margin-bottom: 25px;
 }
 
 .input-group label {
     display: block;
     margin-bottom: 8px;
-    font-weight: 500;
+    font-weight: 600;
     color: #374151;
     font-size: 14px;
 }
 
 .input-group input {
     width: 100%;
-    padding: 12px;
+    padding: 14px;
     border: 1px solid #d1d5db;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 15px;
-    transition: border-color 0.3s;
+    background-color: #f9fafb;
+    transition: all 0.3s;
 }
 
 .input-group input:focus {
     outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    border-color: #1e3a8a;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.1); /* Resplandor azul al escribir */
 }
 
 .btn-primary {
     width: 100%;
-    padding: 14px;
+    padding: 16px;
     background-color: #1e3a8a;
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 16px;
     font-weight: bold;
     cursor: pointer;
+    margin-top: 10px;
     transition: background-color 0.3s;
 }
 
@@ -100,6 +112,31 @@ body {
     background-color: #152c6b;
 }
 
+.login-footer {
+    margin-top: 30px;
+    text-align: center;
+    border-top: 1px solid #e5e7eb;
+    padding-top: 20px;
+}
+
+.login-footer p {
+    color: #9ca3af;
+    font-size: 13px;
+}
+
+/* Que se adapte a celulares (la imagen se pone arriba y el formulario abajo) */
+@media (max-width: 768px) {
+    #login-container {
+        flex-direction: column;
+    }
+    .login-image {
+        flex: 0.3; /* Ocupa un 30% en celular */
+        min-height: 200px;
+    }
+    .login-form-section {
+        flex: 0.7; /* Ocupa el 70% restante */
+    }
+}
 /* --- ESTILOS DE LA PÁGINA PRINCIPAL --- */
 .navbar {
     background-color: white;
