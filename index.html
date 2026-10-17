@@ -23,7 +23,7 @@
         </div>
     </div>
 
-    <!-- 1. PANTALLA DE ACCESO (Pantalla Dividida) -->
+    <!-- 1. PANTALLA DE ACCESO (Pantalla Dividida con cajas redondeadas e íconos) -->
     <div id="login-container">
         <div class="login-image"></div>
         <div class="login-form-section">
@@ -33,26 +33,50 @@
                         <img src="Logo.png" alt="Logo Universidad" class="logo-img">
                         <h2 class="brand-title">UbiCampus</h2>
                     </div>
-                    <p>Sistema Institucional de Recuperación de Objetos</p>
+                    <h3 class="login-subtitle-main">Iniciar sesión</h3>
+                    <p class="login-subtitle-desc">Bienvenido de nuevo. Ingrese sus credenciales para continuar.</p>
                 </div>
+
                 <form id="login-form">
+                    <!-- Campo Nombres (Nombre dentro de la caja) -->
                     <div class="input-group">
-                        <label for="nombre">Nombres</label>
-                        <input type="text" id="nombre" required placeholder="Ej. Adrian Alex" 
-                               pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+" title="Ingresa solo letras y espacios">
+                        <div class="input-wrapper">
+                            <span class="field-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                            </span>
+                            <span class="field-divider"></span>
+                            <input type="text" id="nombre" required placeholder="Nombres*" 
+                                   pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+" title="Ingresa solo letras y espacios">
+                        </div>
                     </div>
+
+                    <!-- Campo Apellidos (Nombre dentro de la caja) -->
                     <div class="input-group">
-                        <label for="apellidos">Apellidos</label>
-                        <input type="text" id="apellidos" required placeholder="Ej. Echevarria Delgado" 
-                               pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+" title="Ingresa solo letras y espacios">
+                        <div class="input-wrapper">
+                            <span class="field-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-3-3.87"></path><path d="M7 23v-2a4 4 0 0 1 3-3.87"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path></svg>
+                            </span>
+                            <span class="field-divider"></span>
+                            <input type="text" id="apellidos" required placeholder="Apellidos*" 
+                                   pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+" title="Ingresa solo letras y espacios">
+                        </div>
                     </div>
+
+                    <!-- Campo Código (Nombre dentro de la caja) -->
                     <div class="input-group">
-                        <label for="codigo">Código de Estudiante</label>
-                        <input type="text" id="codigo" required placeholder="Ej. 700657346" 
-                               pattern="[0-9]+" title="Ingresa solo números">
+                        <div class="input-wrapper">
+                            <span class="field-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><line x1="7" y1="8" x2="17" y2="8"></line><line x1="7" y1="12" x2="13" y2="12"></line><line x1="7" y1="16" x2="10" y2="16"></line></svg>
+                            </span>
+                            <span class="field-divider"></span>
+                            <input type="text" id="codigo" required placeholder="Código de Estudiante*" 
+                                   pattern="[0-9]+" title="Ingresa solo números">
+                        </div>
                     </div>
+
                     <button type="submit" class="btn-primary">Ingresar al Sistema</button>
                 </form>
+
                 <div class="login-footer">
                     <p>Acceso exclusivo para la comunidad universitaria</p>
                 </div>
@@ -62,7 +86,6 @@
 
     <!-- 2. PANTALLA PRINCIPAL (DASHBOARD PROFESIONAL) -->
     <div id="app-container" class="hidden">
-        <!-- Navbar Superior -->
         <nav class="navbar">
             <div class="nav-brand-container">
                 <img src="Logo.png" alt="Logo" class="nav-logo">
@@ -79,16 +102,13 @@
             </div>
         </nav>
 
-        <!-- Dashboard Body -->
         <div class="dashboard-layout">
-            <!-- Barra Lateral de Control -->
             <aside class="sidebar">
                 <div class="user-greeting">
                     <h2 id="welcome-message">¡Bienvenido!</h2>
                     <p>Plano interactivo en tiempo real</p>
                 </div>
 
-                <!-- Tarjetas de Resumen / Estadísticas -->
                 <div class="stats-grid">
                     <div class="stat-card lost">
                         <span class="stat-num" id="count-lost">3</span>
@@ -100,7 +120,6 @@
                     </div>
                 </div>
 
-                <!-- Botones de Acción -->
                 <div class="action-panel">
                     <button id="btn-open-report" class="btn-action report">
                         <span>➕ Reportar Objeto Encontrado</span>
@@ -110,7 +129,6 @@
                     </button>
                 </div>
 
-                <!-- Filtros del Mapa -->
                 <div class="filter-section">
                     <h3>Filtrar en Mapa</h3>
                     <div class="filter-options">
@@ -120,7 +138,6 @@
                     </div>
                 </div>
 
-                <!-- Leyenda del Mapa -->
                 <div class="map-legend">
                     <h4>Leyenda de Marcadores</h4>
                     <ul>
@@ -130,13 +147,11 @@
                 </div>
             </aside>
 
-            <!-- Área Central: MAPA INTERACTIVO -->
             <main class="map-container-wrapper">
                 <div class="map-header">
                     <h3>🗺️ Plano Digital Interactivo - UbiCampus</h3>
                     <span class="live-indicator"><span class="blink-dot"></span> Actualizado en tiempo real</span>
                 </div>
-                <!-- AQUÍ SE CARGA EL MAPA REAL -->
                 <div id="map"></div>
             </main>
         </div>
