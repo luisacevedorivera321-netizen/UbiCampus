@@ -1,1 +1,208 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Roboto', sans-serif;
+}
 
+body {
+    background-color: #f3f4f6;
+    color: #333;
+}
+
+/* Clase para ocultar elementos */
+.hidden {
+    display: none !important;
+}
+
+/* --- ESTILOS DE LA PANTALLA DE ACCESO --- */
+#login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    /* Fondo con gradiente azul profesional */
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+}
+
+.login-box {
+    background-color: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    width: 90%;
+    max-width: 400px;
+}
+
+.logo {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.logo h2 {
+    color: #1e3a8a;
+    font-size: 28px;
+    margin-bottom: 5px;
+}
+
+.logo p {
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #374151;
+    font-size: 14px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 15px;
+    transition: border-color 0.3s;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 14px;
+    background-color: #1e3a8a;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: #152c6b;
+}
+
+/* --- ESTILOS DE LA PÁGINA PRINCIPAL --- */
+.navbar {
+    background-color: white;
+    padding: 15px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.nav-brand {
+    font-size: 24px;
+    font-weight: bold;
+    color: #1e3a8a;
+}
+
+.nav-profile {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* El círculo con las iniciales del usuario */
+.avatar {
+    width: 45px;
+    height: 45px;
+    background-color: #dc2626; /* Rojo para destacar */
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.profile-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-info .name {
+    font-weight: bold;
+    color: #111827;
+}
+
+.profile-info .code {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.main-content {
+    padding: 40px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.dashboard-header {
+    margin-bottom: 30px;
+}
+
+.dashboard-header h1 {
+    color: #1f2937;
+    margin-bottom: 10px;
+}
+
+.dashboard-header p {
+    color: #4b5563;
+}
+
+.map-placeholder {
+    background-color: #e5e7eb;
+    height: 450px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #6b7280;
+    font-size: 18px;
+    border: 2px dashed #9ca3af;
+    margin-bottom: 30px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+.action-buttons button {
+    padding: 15px 30px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.action-buttons button:hover {
+    transform: translateY(-3px);
+}
+
+.btn-report {
+    background-color: #dc2626;
+    color: white;
+}
+
+.btn-search {
+    background-color: #1e3a8a;
+    color: white;
+}
