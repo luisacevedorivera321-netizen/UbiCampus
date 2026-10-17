@@ -10,21 +10,99 @@ body {
     color: #333;
 }
 
-/* Clase para ocultar elementos */
+/* Clase universal para ocultar elementos */
 .hidden {
     display: none !important;
 }
 
-/* --- ESTILOS DE LA PANTALLA DE ACCESO (PANTALLA DIVIDIDA) --- */
+/* --- ANIMACIÓN Y PANTALLA DE CARGA (OVERLAY) --- */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.55); /* Capa oscura semitransparente */
+    backdrop-filter: blur(10px); /* Efecto difuminado profesional */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    animation: fadeIn 0.4s ease-out;
+}
+
+.loading-card {
+    background: white;
+    padding: 40px 50px;
+    border-radius: 16px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    max-width: 380px;
+    width: 90%;
+}
+
+.logo-pulse-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.loading-logo {
+    height: 75px;
+    width: auto;
+    animation: pulseLogo 1.8s infinite ease-in-out;
+}
+
+.spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid #e2e8f0;
+    border-top: 3px solid #1e3a8a;
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+}
+
+.loading-text {
+    font-size: 14px;
+    color: #475569;
+    font-weight: 500;
+}
+
+/* Animaciones Keyframes */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes pulseLogo {
+    0%, 100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 5px rgba(30, 58, 138, 0.3));
+    }
+    50% {
+        transform: scale(1.12);
+        filter: drop-shadow(0 0 18px rgba(30, 58, 138, 0.6));
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* --- ESTILOS DE LA PANTALLA DE ACCESO --- */
 #login-container {
     display: flex;
     height: 100vh;
     width: 100%;
 }
 
-/* Mitad izquierda con la imagen */
 .login-image {
-    flex: 1; /* Ocupa la mitad de la pantalla */
+    flex: 1;
     background-image: url('CAMPUS.jpg');
     background-size: cover;
     background-position: center;
@@ -32,13 +110,12 @@ body {
     box-shadow: inset -10px 0 20px rgba(0,0,0,0.05);
 }
 
-/* Mitad derecha con el formulario */
 .login-form-section {
-    flex: 1; /* Ocupa la otra mitad */
+    flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #ffffff; /* Fondo totalmente blanco */
+    background-color: #ffffff;
 }
 
 .login-box {
@@ -47,22 +124,21 @@ body {
     padding: 40px;
 }
 
-/* Textos */
 .logo {
     text-align: center;
-    margin-bottom: 40px;
+    margin-bottom: 35px;
 }
-/* Alineación e imagen del Logo */
+
 .brand-header {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 12px; /* Espacio entre el logo y el texto */
+    gap: 12px;
     margin-bottom: 8px;
 }
 
 .logo-img {
-    height: 45px; /* Altura del logo para que se alinee con el texto */
+    height: 45px;
     width: auto;
     object-fit: contain;
 }
@@ -70,17 +146,16 @@ body {
 .logo h2 {
     color: #1e3a8a;
     font-size: 32px;
-    margin-bottom: 8px;
     font-weight: 700;
 }
 
 .logo p {
     color: #6b7280;
-    font-size: 15px;
+    font-size: 14px;
 }
 
 .input-group {
-    margin-bottom: 25px;
+    margin-bottom: 22px;
 }
 
 .input-group label {
@@ -89,25 +164,36 @@ body {
     font-weight: 600;
     color: #374151;
     font-size: 14px;
+    transition: color 0.3s;
 }
 
+/* EFECTOS Y ANIMACIONES EN LOS RECUADROS */
 .input-group input {
     width: 100%;
-    padding: 14px;
-    border: 1px solid #d1d5db;
+    padding: 14px 16px;
+    border: 1.5px solid #d1d5db;
     border-radius: 8px;
     font-size: 15px;
     background-color: #f9fafb;
-    transition: all 0.3s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.input-group input:hover {
+    border-color: #9ca3af;
+    background-color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .input-group input:focus {
     outline: none;
     border-color: #1e3a8a;
     background-color: #ffffff;
-    box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.15);
 }
 
+/* EFECTO EN EL BOTÓN */
 .btn-primary {
     width: 100%;
     padding: 16px;
@@ -119,11 +205,18 @@ body {
     font-weight: bold;
     cursor: pointer;
     margin-top: 10px;
-    transition: background-color 0.3s;
+    transition: all 0.3s ease;
 }
 
 .btn-primary:hover {
     background-color: #152c6b;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(30, 58, 138, 0.3);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+    box-shadow: none;
 }
 
 .login-footer {
@@ -138,7 +231,7 @@ body {
     font-size: 13px;
 }
 
-/* Responsivo para móviles */
+/* Responsivo */
 @media (max-width: 768px) {
     #login-container {
         flex-direction: column;
@@ -259,6 +352,10 @@ body {
     color: white;
 }
 
+.btn-search {
+    background-color: #1e3a8a;
+    color: white;
+}
 .btn-search {
     background-color: #1e3a8a;
     color: white;
