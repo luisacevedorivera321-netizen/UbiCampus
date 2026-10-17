@@ -25,11 +25,11 @@ body {
 /* Mitad izquierda con la imagen */
 .login-image {
     flex: 1; /* Ocupa la mitad de la pantalla */
-    background-image: url('CAMPUS.jpg'); /* Aquí está tu imagen */
+    background-image: url('CAMPUS.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    box-shadow: inset -10px 0 20px rgba(0,0,0,0.05); /* Sombra ligera para separar del blanco */
+    box-shadow: inset -10px 0 20px rgba(0,0,0,0.05);
 }
 
 /* Mitad derecha con el formulario */
@@ -43,18 +43,18 @@ body {
 
 .login-box {
     width: 100%;
-    max-width: 420px; /* Ancho máximo para que se vea formal */
+    max-width: 420px;
     padding: 40px;
 }
 
-/* Textos más elegantes */
+/* Textos */
 .logo {
     text-align: center;
     margin-bottom: 40px;
 }
 
 .logo h2 {
-    color: #1e3a8a; /* Azul institucional */
+    color: #1e3a8a;
     font-size: 32px;
     margin-bottom: 8px;
     font-weight: 700;
@@ -91,7 +91,7 @@ body {
     outline: none;
     border-color: #1e3a8a;
     background-color: #ffffff;
-    box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.1); /* Resplandor azul al escribir */
+    box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.1);
 }
 
 .btn-primary {
@@ -124,19 +124,20 @@ body {
     font-size: 13px;
 }
 
-/* Que se adapte a celulares (la imagen se pone arriba y el formulario abajo) */
+/* Responsivo para móviles */
 @media (max-width: 768px) {
     #login-container {
         flex-direction: column;
     }
     .login-image {
-        flex: 0.3; /* Ocupa un 30% en celular */
+        flex: 0.3;
         min-height: 200px;
     }
     .login-form-section {
-        flex: 0.7; /* Ocupa el 70% restante */
+        flex: 0.7;
     }
 }
+
 /* --- ESTILOS DE LA PÁGINA PRINCIPAL --- */
 .navbar {
     background-color: white;
@@ -159,11 +160,10 @@ body {
     gap: 15px;
 }
 
-/* El círculo con las iniciales del usuario */
 .avatar {
     width: 45px;
     height: 45px;
-    background-color: #dc2626; /* Rojo para destacar */
+    background-color: #dc2626;
     color: white;
     border-radius: 50%;
     display: flex;
