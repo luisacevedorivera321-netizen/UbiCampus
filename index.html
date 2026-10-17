@@ -10,28 +10,37 @@
 </head>
 <body>
 
-    <!-- 1. PANTALLA DE ACCESO -->
-    <div id="login-container" class="container">
-        <div class="login-box">
-            <div class="logo">
-                <h2>UbiCampus</h2>
-                <p>Sistema de Recuperación de Objetos</p>
+  <!-- 1. PANTALLA DE ACCESO (Pantalla Dividida) -->
+    <div id="login-container">
+        <!-- Lado izquierdo: Imagen de la Universidad -->
+        <div class="login-image"></div>
+        
+        <!-- Lado derecho: Formulario Blanco y Formal -->
+        <div class="login-form-section">
+            <div class="login-box">
+                <div class="logo">
+                    <h2>UbiCampus</h2>
+                    <p>Sistema Institucional de Recuperación de Objetos</p>
+                </div>
+                <form id="login-form">
+                    <div class="input-group">
+                        <label for="nombre">Nombres</label>
+                        <input type="text" id="nombre" required placeholder="Ej. Luis David">
+                    </div>
+                    <div class="input-group">
+                        <label for="apellidos">Apellidos</label>
+                        <input type="text" id="apellidos" required placeholder="Ej. Acevedo Rivera">
+                    </div>
+                    <div class="input-group">
+                        <label for="codigo">Código de Estudiante</label>
+                        <input type="text" id="codigo" required placeholder="Ej. 2023000000">
+                    </div>
+                    <button type="submit" class="btn-primary">Ingresar al Sistema</button>
+                </form>
+                <div class="login-footer">
+                    <p>Acceso exclusivo para la comunidad universitaria</p>
+                </div>
             </div>
-            <form id="login-form">
-                <div class="input-group">
-                    <label for="nombre">Nombres</label>
-                    <input type="text" id="nombre" required placeholder="Ej. Luis David">
-                </div>
-                <div class="input-group">
-                    <label for="apellidos">Apellidos</label>
-                    <input type="text" id="apellidos" required placeholder="Ej. Acevedo Rivera">
-                </div>
-                <div class="input-group">
-                    <label for="codigo">Código de Estudiante</label>
-                    <input type="text" id="codigo" required placeholder="Ej. 2023000000">
-                </div>
-                <button type="submit" class="btn-primary">Ingresar al Sistema</button>
-            </form>
         </div>
     </div>
 
