@@ -19,21 +19,34 @@ document.addEventListener('DOMContentLoaded', () => {
         const apellidos = document.getElementById('apellidos').value.trim();
         const codigo = document.getElementById('codigo').value.trim();
 
-        // Validar que los campos no estén vacíos
-        if(nombre && apellidos && codigo) {
-            
-            // 1. Generar iniciales para la foto de perfil (Ej. Luis Acevedo -> LA)
-            const iniciales = nombre.charAt(0).toUpperCase() + apellidos.charAt(0).toUpperCase();
+        // Reglas de validación (expresiones regulares)
+        const soloLetras = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+        const soloNumeros = /^[0-9]+$/;
 
-            // 2. Insertar los datos del estudiante en la interfaz
-            displayName.textContent = `${nombre} ${apellidos}`;
-            displayCode.textContent = `Cód: ${codigo}`;
-            welcomeMessage.textContent = `¡Hola, ${nombre}!`;
-            profileAvatar.textContent = iniciales;
-
-            // 3. Ocultar la pantalla de acceso y mostrar la página principal
-            loginContainer.classList.add('hidden');
-            appContainer.classList.remove('hidden');
+        // Validar que los nombres y apellidos solo tengan letras
+        if (!soloLetras.test(nombre) || !soloLetras.test(apellidos)) {
+            alert('Por favor, ingresa solo letras en los campos de Nombre y Apellidos.');
+            return;
         }
+
+        // Validar que el código solo tenga números
+        if (!soloNumeros.test(codigo)) {
+            alert('Por favor, ingresa solo números en el Código de Estudiante.');
+            return;
+        }
+
+        // Si todo está correcto:
+        // 1. Generar iniciales para la foto de perfil (Ej. Luis Acevedo -> LA)
+        const iniciales = nombre.charAt(0).toUpperCase() + apellidos.charAt(0).toUpperCase();
+
+        // 2. Insertar los datos del estudiante en la interfaz
+        displayName.textContent = `${nombre} ${apellidos}`;
+        displayCode.textContent = `Cód: ${codigo}`;
+        welcomeMessage.textContent = `¡Hola, ${nombre}!`;
+        profileAvatar.textContent = iniciales;
+
+        // 3. Ocultar la pantalla de acceso y mostrar la página principal
+        loginContainer.classList.add('hidden');
+        appContainer.classList.remove('hidden');
     });
 });
