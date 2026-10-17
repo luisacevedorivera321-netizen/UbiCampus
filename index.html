@@ -9,6 +9,17 @@
 </head>
 <body>
 
+    <!-- PANTALLA DE CARGA (Overlay Difuminado) -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="loading-card">
+            <div class="logo-pulse-container">
+                <img src="Logo.jpg" alt="Cargando..." class="loading-logo">
+            </div>
+            <div class="spinner"></div>
+            <p class="loading-text">Validando credenciales en UbiCampus...</p>
+        </div>
+    </div>
+
     <!-- 1. PANTALLA DE ACCESO (Pantalla Dividida) -->
     <div id="login-container">
         <!-- Lado izquierdo: Imagen -->
@@ -17,14 +28,14 @@
         <!-- Lado derecho: Formulario -->
         <div class="login-form-section">
             <div class="login-box">
-<div class="logo">
+                <div class="logo">
                     <div class="brand-header">
                         <img src="Logo.jpg" alt="Logo Universidad" class="logo-img">
                         <h2>UbiCampus</h2>
                     </div>
                     <p>Sistema Institucional de Recuperación de Objetos</p>
                 </div>
-               <form id="login-form">
+                <form id="login-form">
                     <div class="input-group">
                         <label for="nombre">Nombres</label>
                         <input type="text" id="nombre" required placeholder="Ej. Adrian Alex" 
