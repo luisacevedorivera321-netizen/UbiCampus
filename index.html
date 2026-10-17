@@ -3,9 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UbiCampus - Acceso</title>
+    <title>UbiCampus - Sistema Institucional de Recuperación</title>
     <link rel="stylesheet" href="estilos.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Fuentes Google: Montserrat y Roboto -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Leaflet CSS (Para el mapa interactivo) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body>
 
@@ -13,7 +16,7 @@
     <div id="loading-overlay" class="loading-overlay hidden">
         <div class="loading-card">
             <div class="logo-pulse-container">
-                <img src="Logo.jpg" alt="Cargando..." class="loading-logo">
+                <img src="Logo.png" alt="Cargando..." class="loading-logo">
             </div>
             <div class="spinner"></div>
             <p class="loading-text">Validando credenciales en UbiCampus...</p>
@@ -22,15 +25,12 @@
 
     <!-- 1. PANTALLA DE ACCESO (Pantalla Dividida) -->
     <div id="login-container">
-        <!-- Lado izquierdo: Imagen -->
         <div class="login-image"></div>
-        
-        <!-- Lado derecho: Formulario -->
         <div class="login-form-section">
             <div class="login-box">
                 <div class="logo">
                     <div class="brand-header">
-                        <img src="Logo.jpg" alt="Logo Universidad" class="logo-img">
+                        <img src="Logo.png" alt="Logo Universidad" class="logo-img">
                         <h2 class="brand-title">UbiCampus</h2>
                     </div>
                     <p>Sistema Institucional de Recuperación de Objetos</p>
@@ -38,17 +38,17 @@
                 <form id="login-form">
                     <div class="input-group">
                         <label for="nombre">Nombres</label>
-                        <input type="text" id="nombre" required placeholder="Ejemplo. Adrian Alex" 
+                        <input type="text" id="nombre" required placeholder="Ej. Adrian Alex" 
                                pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+" title="Ingresa solo letras y espacios">
                     </div>
                     <div class="input-group">
                         <label for="apellidos">Apellidos</label>
-                        <input type="text" id="apellidos" required placeholder="Ejemplo. Echevarria Delgado" 
+                        <input type="text" id="apellidos" required placeholder="Ej. Echevarria Delgado" 
                                pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+" title="Ingresa solo letras y espacios">
                     </div>
                     <div class="input-group">
                         <label for="codigo">Código de Estudiante</label>
-                        <input type="text" id="codigo" required placeholder="Ejemplo. 700657346" 
+                        <input type="text" id="codigo" required placeholder="Ej. 700657346" 
                                pattern="[0-9]+" title="Ingresa solo números">
                     </div>
                     <button type="submit" class="btn-primary">Ingresar al Sistema</button>
@@ -60,36 +60,125 @@
         </div>
     </div>
 
-    <!-- 2. PANTALLA PRINCIPAL -->
+    <!-- 2. PANTALLA PRINCIPAL (DASHBOARD PROFESIONAL) -->
     <div id="app-container" class="hidden">
+        <!-- Navbar Superior -->
         <nav class="navbar">
-            <div class="nav-brand">UbiCampus</div>
+            <div class="nav-brand-container">
+                <img src="Logo.png" alt="Logo" class="nav-logo">
+                <span class="nav-brand">UbiCampus</span>
+                <span class="campus-badge">📍 Campus Chimbote</span>
+            </div>
             <div class="nav-profile">
                 <div class="avatar" id="profile-avatar">--</div>
                 <div class="profile-info">
-                    <span id="display-name" class="name">Nombre Apellido</span>
-                    <span id="display-code" class="code">Cod: 000000</span>
+                    <span id="display-name" class="name">Estudiante</span>
+                    <span id="display-code" class="code">Cód: 00000000</span>
                 </div>
+                <button id="logout-btn" class="logout-btn" title="Cerrar Sesión">🚪 Salir</button>
             </div>
         </nav>
 
-        <main class="main-content">
-            <header class="dashboard-header">
-                <h1 id="welcome-message">¡Bienvenido!</h1>
-                <p>Aquí podrás reportar y buscar objetos perdidos en el campus mediante nuestro plano interactivo.</p>
-            </header>
-            
-            <div class="map-placeholder">
-                <p>🗺️ El plano digital 2D interactivo se cargará aquí</p>
-            </div>
+        <!-- Dashboard Body -->
+        <div class="dashboard-layout">
+            <!-- Barra Lateral de Control -->
+            <aside class="sidebar">
+                <div class="user-greeting">
+                    <h2 id="welcome-message">¡Bienvenido!</h2>
+                    <p>Plano interactivo en tiempo real</p>
+                </div>
 
-            <div class="action-buttons">
-                <button class="btn-report">Reportar Objeto Encontrado</button>
-                <button class="btn-search">Buscar Objeto Perdido</button>
-            </div>
-        </main>
+                <!-- Tarjetas de Resumen / Estadísticas -->
+                <div class="stats-grid">
+                    <div class="stat-card lost">
+                        <span class="stat-num" id="count-lost">3</span>
+                        <span class="stat-label">Perdidos</span>
+                    </div>
+                    <div class="stat-card found">
+                        <span class="stat-num" id="count-found">5</span>
+                        <span class="stat-label">Encontrados</span>
+                    </div>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="action-panel">
+                    <button id="btn-open-report" class="btn-action report">
+                        <span>➕ Reportar Objeto Encontrado</span>
+                    </button>
+                    <button id="btn-open-search" class="btn-action search">
+                        <span>🔍 Buscar Mi Objeto</span>
+                    </button>
+                </div>
+
+                <!-- Filtros del Mapa -->
+                <div class="filter-section">
+                    <h3>Filtrar en Mapa</h3>
+                    <div class="filter-options">
+                        <button class="filter-chip active" data-filter="all">Todos</button>
+                        <button class="filter-chip lost-chip" data-filter="lost">🔴 Perdidos</button>
+                        <button class="filter-chip found-chip" data-filter="found">🟢 Encontrados</button>
+                    </div>
+                </div>
+
+                <!-- Leyenda del Mapa -->
+                <div class="map-legend">
+                    <h4>Leyenda de Marcadores</h4>
+                    <ul>
+                        <li><span class="dot red"></span> Objeto Buscado por Estudiante</li>
+                        <li><span class="dot green"></span> Objeto Hallado en Custodia</li>
+                    </ul>
+                </div>
+            </aside>
+
+            <!-- Área Central: MAPA INTERACTIVO -->
+            <main class="map-container-wrapper">
+                <div class="map-header">
+                    <h3>🗺️ Plano Digital Interactivo - UbiCampus</h3>
+                    <span class="live-indicator"><span class="blink-dot"></span> Actualizado en tiempo real</span>
+                </div>
+                <!-- AQUÍ SE CARGA EL MAPA REAL -->
+                <div id="map"></div>
+            </main>
+        </div>
     </div>
 
+    <!-- MODAL FORMULARIO DE REPORTE DE OBJETO -->
+    <div id="modal-report" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Reportar Objeto Encontrado</h3>
+                <button class="close-modal" id="close-report-modal">&times;</button>
+            </div>
+            <form id="form-report-item">
+                <div class="input-group">
+                    <label for="item-title">Nombre del Objeto</label>
+                    <input type="text" id="item-title" required placeholder="Ej. Mochila negra con cargador">
+                </div>
+                <div class="input-group">
+                    <label for="item-category">Categoría</label>
+                    <select id="item-category" required>
+                        <option value="Documentos / DNI">Documentos / DNI</option>
+                        <option value="Celulares / Laptops">Celulares / Laptops</option>
+                        <option value="Llaves / Billeteras">Llaves / Billeteras</option>
+                        <option value="Mochilas / Monedas">Mochilas / Cuadernos</option>
+                        <option value="Otros">Otros</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="item-location">Ubicación del Hallazgo (Pabellón/Aula)</label>
+                    <input type="text" id="item-location" required placeholder="Ej. Cafetería central / Pabellón B - Piso 2">
+                </div>
+                <div class="input-group">
+                    <label for="item-desc">Descripción detallada</label>
+                    <textarea id="item-desc" rows="3" placeholder="Detalla el color, marca o señas particulares..."></textarea>
+                </div>
+                <button type="submit" class="btn-primary">Publicar en el Plano Digital</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Leaflet JS (Motor del mapa) -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
