@@ -24,18 +24,21 @@
                     </div>
                     <p>Sistema Institucional de Recuperación de Objetos</p>
                 </div>
-                <form id="login-form">
+               <form id="login-form">
                     <div class="input-group">
                         <label for="nombre">Nombres</label>
-                        <input type="text" id="nombre" required placeholder="Ej. Luis David">
+                        <input type="text" id="nombre" required placeholder="Ej. Luis David" 
+                               pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+" title="Ingresa solo letras y espacios">
                     </div>
                     <div class="input-group">
                         <label for="apellidos">Apellidos</label>
-                        <input type="text" id="apellidos" required placeholder="Ej. Acevedo Rivera">
+                        <input type="text" id="apellidos" required placeholder="Ej. Acevedo Rivera" 
+                               pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+" title="Ingresa solo letras y espacios">
                     </div>
                     <div class="input-group">
                         <label for="codigo">Código de Estudiante</label>
-                        <input type="text" id="codigo" required placeholder="Ej. 2023000000">
+                        <input type="text" id="codigo" required placeholder="Ej. 700657346" 
+                               pattern="[0-9]+" title="Ingresa solo números">
                     </div>
                     <button type="submit" class="btn-primary">Ingresar al Sistema</button>
                 </form>
