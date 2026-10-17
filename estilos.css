@@ -89,8 +89,8 @@ body {
     padding: 40px;
 }
 
-.logo { text-align: center; margin-bottom: 30px; }
-.brand-header { display: flex; align-items: center; justify-content: center; gap: 10px; }
+.logo { text-align: center; margin-bottom: 25px; }
+.brand-header { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 12px; }
 .logo-img { height: 45px; width: auto; }
 
 .logo h2, .brand-title {
@@ -102,37 +102,92 @@ body {
     -webkit-text-fill-color: transparent;
 }
 
-.input-group { margin-bottom: 20px; }
-.input-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; color: #475569; }
-.input-group input, .input-group select, .input-group textarea {
-    width: 100%;
-    padding: 12px 14px;
-    border: 1.5px solid #cbd5e1;
-    border-radius: 8px;
-    font-size: 14px;
-    background-color: #f8fafc;
-    transition: all 0.3s;
+.login-subtitle-main {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    color: #1e3a8a;
+    margin-bottom: 6px;
 }
-.input-group input:focus, .input-group select:focus, .input-group textarea:focus {
-    outline: none;
+
+.login-subtitle-desc {
+    color: #64748b;
+    font-size: 13.5px;
+    margin-bottom: 25px;
+}
+
+/* --- CAJAS REDONDEADAS CON NOMBRES DENTRO --- */
+.input-group {
+    margin-bottom: 18px;
+}
+
+.input-wrapper {
+    display: flex;
+    align-items: center;
+    background-color: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 30px; /* Bordes redondeados en forma de píldora */
+    padding: 8px 20px;
+    transition: all 0.3s ease;
+}
+
+.input-wrapper:hover {
+    border-color: #94a3b8;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.input-wrapper:focus-within {
     border-color: #1e3a8a;
-    background-color: white;
     box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.1);
+}
+
+.field-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.field-divider {
+    width: 1px;
+    height: 22px;
+    background-color: #cbd5e1;
+    margin: 0 14px; /* Línea divisoria vertical */
+}
+
+.input-wrapper input {
+    border: none !important;
+    outline: none !important;
+    background: transparent !important;
+    width: 100%;
+    padding: 10px 0;
+    font-size: 14.5px;
+    color: #1e293b;
+    box-shadow: none !important;
+}
+
+.input-wrapper input::placeholder {
+    color: #94a3b8;
 }
 
 .btn-primary {
     width: 100%;
-    padding: 14px;
+    padding: 16px;
     background-color: #1e3a8a;
     color: white;
     border: none;
-    border-radius: 8px;
+    border-radius: 30px;
     font-size: 15px;
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.2s;
+    margin-top: 10px;
+    transition: all 0.3s ease;
 }
-.btn-primary:hover { background-color: #152c6b; transform: translateY(-1px); }
+
+.btn-primary:hover {
+    background-color: #152c6b;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(30, 58, 138, 0.25);
+}
 
 .login-footer {
     margin-top: 25px;
@@ -198,7 +253,6 @@ body {
     height: calc(100vh - 65px);
 }
 
-/* Sidebar */
 .sidebar {
     width: 340px;
     background-color: #ffffff;
@@ -260,7 +314,6 @@ body {
 .dot.red { background-color: #dc2626; }
 .dot.green { background-color: #16a34a; }
 
-/* Wrapper del Mapa */
 .map-container-wrapper {
     flex: 1;
     display: flex;
@@ -289,7 +342,7 @@ body {
     z-index: 1;
 }
 
-/* Modales Flotantes */
+/* Modales */
 .modal-overlay {
     position: fixed;
     top: 0; left: 0; width: 100vw; height: 100vh;
@@ -308,64 +361,21 @@ body {
 .modal-header h3 { font-size: 18px; color: #1e3a8a; font-family: 'Montserrat', sans-serif; }
 .close-modal { background: none; border: none; font-size: 24px; cursor: pointer; color: #64748b; }
 
-/* ========================================================= */
-/* --- REGLAS DE ADAPTABILIDAD PARA CELULARES (RESPONSIVE) --- */
-/* ========================================================= */
+/* --- RESPONSIVE CELULARES --- */
 @media (max-width: 768px) {
-    /* Pantalla de Inicio de Sesión en móvil */
     #login-container {
         flex-direction: column;
         height: auto;
         min-height: 100vh;
     }
-    
-    .login-image {
-        min-height: 180px;
-        flex: none;
-    }
-
-    .login-form-section {
-        padding: 30px 20px;
-    }
-
-    .login-box {
-        padding: 0;
-    }
-
-    /* Navbar en móvil */
-    .navbar {
-        padding: 10px 15px;
-    }
-
-    .campus-badge, .profile-info .code {
-        display: none; /* Oculta elementos secundarios en celular */
-    }
-
-    .nav-brand {
-        font-size: 18px;
-    }
-
-    /* Layout del Dashboard en móvil */
-    .dashboard-layout {
-        flex-direction: column;
-        height: auto;
-    }
-
-    .sidebar {
-        width: 100%;
-        border-right: none;
-        border-bottom: 1px solid #e2e8f0;
-        padding: 16px;
-        gap: 15px;
-    }
-
-    .map-container-wrapper {
-        padding: 12px;
-        height: 480px; /* Altura cómoda para maniobrar el mapa con los dedos */
-    }
-
-    #map {
-        height: 100%;
-        min-height: 400px;
-    }
+    .login-image { min-height: 180px; flex: none; }
+    .login-form-section { padding: 30px 20px; }
+    .login-box { padding: 0; }
+    .navbar { padding: 10px 15px; }
+    .campus-badge, .profile-info .code { display: none; }
+    .nav-brand { font-size: 18px; }
+    .dashboard-layout { flex-direction: column; height: auto; }
+    .sidebar { width: 100%; border-right: none; border-bottom: 1px solid #e2e8f0; padding: 16px; gap: 15px; }
+    .map-container-wrapper { padding: 12px; height: 480px; }
+    #map { height: 100%; min-height: 400px; }
 }
