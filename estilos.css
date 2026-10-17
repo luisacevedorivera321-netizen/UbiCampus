@@ -379,3 +379,7 @@ body {
     .map-container-wrapper { padding: 12px; height: 480px; }
     #map { height: 100%; min-height: 400px; }
 }
+/* Ocultar la barra de atribución de la esquina inferior derecha del mapa */
+.leaflet-control-attribution {
+    display: none !important;
+}
