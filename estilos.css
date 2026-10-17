@@ -52,6 +52,20 @@ body {
     text-align: center;
     margin-bottom: 40px;
 }
+/* Alineación e imagen del Logo */
+.brand-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px; /* Espacio entre el logo y el texto */
+    margin-bottom: 8px;
+}
+
+.logo-img {
+    height: 45px; /* Altura del logo para que se alinee con el texto */
+    width: auto;
+    object-fit: contain;
+}
 
 .logo h2 {
     color: #1e3a8a;
