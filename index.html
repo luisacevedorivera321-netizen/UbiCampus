@@ -1,1 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UbiCampus - Sistema de Objetos Perdidos UCV</title>
+    <!-- Fuentes de Google para un aspecto moderno -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
 
+    <!-- Pantalla de Inicio de Sesión / Registro de Datos -->
+    <div id="pantallaLogin" class="login-overlay">
+        <div class="login-card">
+            <div class="brand-header">
+                <div class="logo-badge">UCV</div>
+                <h2>UbiCampus</h2>
+                <p>Plataforma Institucional de Objetos Perdidos</p>
+            </div>
+            
+            <form id="formLogin" onsubmit="registrarUsuario(event)">
+                <div class="input-group">
+                    <label for="nombreCompleto">Nombres y Apellidos</label>
+                    <input type="text" id="nombreCompleto" placeholder="Ej. Juan Pérez García" required>
+                </div>
+                
+                <div class="input-group">
+                    <label for="codigoEstudiante">Código de Estudiante</label>
+                    <input type="text" id="codigoEstudiante" placeholder="Ej. 7001234567" pattern="[0-9]{8,10}" title="Ingresa un código válido de 8 a 10 dígitos" required>
+                </div>
+
+                <button type="submit" class="btn-primary">Ingresar al Sistema</button>
+            </form>
+            <span class="footer-note">Universidad César Vallejo - Campus Chimbote</span>
+        </div>
+    </div>
+
+    <!-- Contenido Principal de la Plataforma (Oculto hasta ingresar datos) -->
+    <div id="appPrincipal" class="app-container hidden">
+        
+        <!-- Navegación Superior -->
+        <header class="navbar">
+            <div class="nav-brand">
+                <span class="logo-icon">📍</span>
+                <h1>UbiCampus</h1>
+            </div>
+            <nav class="nav-links">
+                <button class="nav-btn active" onclick="cambiarVista('mapa')">🗺️ Plano Interactivo</button>
+                <button class="nav-btn" onclick="cambiarVista('reportes')">📋 Reportes</button>
+                <button class="nav-btn" onclick="cambiarVista('perfil')">👤 Mi Perfil</button>
+            </nav>
+            <button class="btn-logout" onclick="cerrarSesion()">Cerrar Sesión</button>
+        </header>
+
+        <!-- Vista: Plano Digital Interactivo -->
+        <main id="vistaMapa" class="vista-content">
+            <section class="hero-banner">
+                <h2>Ubicación e Interacción en Tiempo Real</h2>
+                <p>Haz clic en cualquier área del campus para revisar objetos reportados en esa zona.</p>
+            </section>
+
+            <div class="dashboard-grid">
+                <!-- Mapa 2D interactivo -->
+                <div class="map-card">
+                    <h3>Mapa del Campus UCV</h3>
+                    <div class="plano-grid">
+                        <div class="zona-item" onclick="seleccionarZona('Pabellón A - Aulas')">
+                            <span class="zona-icon">🏫</span>
+                            <h4>Pabellón A</h4>
+                            <p>Aulas y Auditorio</p>
+                        </div>
+                        <div class="zona-item" onclick="seleccionarZona('Biblioteca Central')">
+                            <span class="zona-icon">📚</span>
+                            <h4>Biblioteca</h4>
+                            <p>Salas de Estudio</p>
+                        </div>
+                        <div class="zona-item" onclick="seleccionarZona('Cafetería / Comedor')">
+                            <span class="zona-icon">☕</span>
+                            <h4>Cafetería</h4>
+                            <p>Área Común</p>
+                        </div>
+                        <div class="zona-item" onclick="seleccionarZona('Laboratorios de Cómputo')">
+                            <span class="zona-icon">💻</span>
+                            <h4>Laboratorios</h4>
+                            <p>Ingeniería y Ciencias</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel Lateral de Coincidencias -->
+                <div class="side-panel">
+                    <h3>Objetos en <span id="zonaSeleccionadaNombre">Selecciona una zona</span></h3>
+                    <div id="listaObjetos" class="lista-objetos">
+                        <div class="empty-state">
+                            <p>Selecciona una zona del plano para desplegar los reportes disponibles.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Vista: Perfil del Estudiante -->
+        <section id="vistaPerfil" class="vista-content hidden">
+            <div class="profile-card">
+                <div class="profile-avatar">
+                    <span id="avatarIniciales">--</span>
+                </div>
+                <h2 id="perfilNombre">Cargando...</h2>
+                <p class="role-badge">Estudiante Pregrado</p>
+
+                <div class="profile-details">
+                    <div class="detail-item">
+                        <span class="label">Código de Estudiante</span>
+                        <span class="value" id="perfilCodigo">----------</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Institución</span>
+                        <span class="value">Universidad César Vallejo</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Sede</span>
+                        <span class="value">Chimbote</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Vista: Lista de Reportes General -->
+        <section id="vistaReportes" class="vista-content hidden">
+            <div class="reportes-card">
+                <h2>Historial de Reportes Institucionales</h2>
+                <p>Gestión transparente de pertenencias encontradas dentro del campus.</p>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Objeto</th>
+                                <th>Lugar</th>
+                                <th>Fecha</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Mochila Lenovo Negra</td>
+                                <td>Pabellón A - Aula 302</td>
+                                <td>Hoy, 10:30 AM</td>
+                                <td><span class="badge badge-found">EnCustodia</span></td>
+                            </tr>
+                            <tr>
+                                <td>Carnet Universitario</td>
+                                <td>Biblioteca Central</td>
+                                <td>Ayer, 04:15 PM</td>
+                                <td><span class="badge badge-pending">En Búsqueda</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
