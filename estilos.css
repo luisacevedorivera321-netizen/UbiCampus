@@ -157,7 +157,9 @@ body {
 .input-wrapper input {
     border: none !important;
     outline: none !important;
-    background: transparent !important;
+    #map {
+    background-color: #ffffff !important;
+}
     width: 100%;
     padding: 10px 0;
     font-size: 14.5px;
