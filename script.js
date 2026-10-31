@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let map = null;
     let markers = [];
 
-   // Objetos de ejemplo con coordenadas en el plano de AutoCAD (Y, X)
+    // Objetos de ejemplo registrados en el Plano de AutoCAD (Y, X)
     const initialItems = [
         { lat: 300, lng: 350, title: "Billetera de cuero marrón", type: "found", location: "Cafetería Central", category: "Llaves / Billeteras", date: "Hoy" },
         { lat: 750, lng: 500, title: "Llaves de auto Toyota con llavero rojo", type: "found", location: "Pabellón A - Piso 1", category: "Llaves / Billeteras", date: "Ayer" },
@@ -30,72 +30,69 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     // Evento de Login
-    loginForm.addEventListener('submit', (evento) => {
-        evento.preventDefault();
+    if (loginForm) {
+        loginForm.addEventListener('submit', (evento) => {
+            evento.preventDefault();
 
-        const nombre = document.getElementById('nombre').value.trim();
-        const apellidos = document.getElementById('apellidos').value.trim();
-        const codigo = document.getElementById('codigo').value.trim();
+            const nombre = document.getElementById('nombre').value.trim();
+            const apellidos = document.getElementById('apellidos').value.trim();
+            const codigo = document.getElementById('codigo').value.trim();
 
-        loadingOverlay.classList.remove('hidden');
+            loadingOverlay.classList.remove('hidden');
 
-        setTimeout(() => {
-            const iniciales = nombre.charAt(0).toUpperCase() + apellidos.charAt(0).toUpperCase();
+            setTimeout(() => {
+                const iniciales = (nombre.charAt(0) || 'U') + (apellidos.charAt(0) || 'C');
 
-            displayName.textContent = `${nombre} ${apellidos}`;
-            displayCode.textContent = `Cód: ${codigo}`;
-            welcomeMessage.textContent = `¡Hola, ${nombre}! 👋`;
-            profileAvatar.textContent = iniciales;
+                displayName.textContent = `${nombre} ${apellidos}`;
+                displayCode.textContent = `Cód: ${codigo}`;
+                welcomeMessage.textContent = `¡Hola, ${nombre}! 👋`;
+                profileAvatar.textContent = iniciales.toUpperCase();
 
-            loadingOverlay.classList.add('hidden');
-            loginContainer.classList.add('hidden');
-            appContainer.classList.remove('hidden');
+                loadingOverlay.classList.add('hidden');
+                loginContainer.classList.add('hidden');
+                appContainer.classList.remove('hidden');
 
-            // Inicializar el mapa al entrar
-            initMap();
-        }, 2000);
-    });
+                // Inicializar el mapa al entrar
+                initMap();
+            }, 1200);
+        });
+    }
 
- 
-        // Icono rojo para perdidos, verde para encontrados
-        const iconColor = item.type === 'found' ? 'green' : 'red';
-        const 
-            
-       // Función para Cargar el Plano Interactivo de AutoCAD
+    // Función para Cargar el Plano Interactivo de AutoCAD con Bloqueo de Bordes
     function initMap() {
-        if (map) return;
+        if (map) return; // Si ya fue creado, no duplicar
 
+        // Dimensiones virtuales del plano [Alto, Ancho]
         const bounds = [[0, 0], [1000, 1800]];
 
-        // 1. Inicializar mapa con bloqueo estricto de bordes
+        // Crear instancia en modo Plano Simple con límites estrictos
         map = L.map('map', {
             crs: L.CRS.Simple,
-            maxBounds: bounds,
-            maxBoundsViscosity: 1.0, // Impide arrastrar fuera de los bordes
+            minZoom: -1,
+            maxZoom: 3,
+            maxBounds: bounds,          // Limita la cámara únicamente a la imagen
+            maxBoundsViscosity: 1.0,     // Bloquea rígidamente para evitar ver el fondo
             attributionControl: false
         });
 
-        // 2. Montar imagen
+        // Cargar la imagen recortada de AutoCAD
         L.imageOverlay('plano-ucv.jpg', bounds).addTo(map);
 
-        // 3. Encuadrar
+        // Encuadrar el plano completo
         map.fitBounds(bounds);
 
-        // 4. BLOQUEO DE ZOOM: Ajusta el zoom mínimo exactamente al tamaño del recuadro
-        const minZoomCalculado = map.getBoundsZoom(bounds);
-        map.setMinZoom(minZoomCalculado);
-        map.setMaxZoom(minZoomCalculado + 3);
-
-        // 5. Cargar marcadores
+        // Agregar los objetos al plano
         initialItems.forEach(item => addMarkerToMap(item));
 
         setTimeout(() => {
             map.invalidateSize();
-        }, 200);
+        }, 300);
     }
 
     // Agregar Marcador al Mapa con PopUp estilizado
-    function addMarkerToMap(item) {customIcon = L.divIcon({
+    function addMarkerToMap(item) {
+        const iconColor = item.type === 'found' ? 'green' : 'red';
+        const customIcon = L.divIcon({
             className: 'custom-pin',
             html: `<div style="background-color: ${iconColor === 'green' ? '#16a34a' : '#dc2626'}; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 8px rgba(0,0,0,0.4);"></div>`,
             iconSize: [20, 20]
@@ -122,36 +119,43 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Control de Modales
-    btnOpenReport.addEventListener('click', () => modalReport.classList.remove('hidden'));
-    closeReportModal.addEventListener('click', () => modalReport.classList.add('hidden'));
+    if (btnOpenReport && modalReport) {
+        btnOpenReport.addEventListener('click', () => modalReport.classList.remove('hidden'));
+    }
+    if (closeReportModal && modalReport) {
+        closeReportModal.addEventListener('click', () => modalReport.classList.add('hidden'));
+    }
 
     // Publicar Objeto desde el Formulario
-    formReportItem.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const title = document.getElementById('item-title').value;
-        const category = document.getElementById('item-category').value;
-        const location = document.getElementById('item-location').value;
+    if (formReportItem) {
+        formReportItem.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const title = document.getElementById('item-title').value;
+            const category = document.getElementById('item-category').value;
+            const location = document.getElementById('item-location').value;
 
-       // Crear marcador en una ubicación dentro del plano
-        const newItem = {
-            lat: Math.floor(Math.random() * 600) + 200,
-            lng: Math.floor(Math.random() * 1200) + 300,
-            title: title,
-            type: "found",
-            location: location,
-            category: category,
-            date: "Ahora"
-        };
+            const newItem = {
+                lat: Math.floor(Math.random() * 600) + 200,
+                lng: Math.floor(Math.random() * 1200) + 300,
+                title: title,
+                type: "found",
+                location: location,
+                category: category,
+                date: "Ahora"
+            };
 
-        addMarkerToMap(newItem);
-        modalReport.classList.add('hidden');
-        formReportItem.reset();
-        alert('¡Excelente! El objeto reportado ya se encuentra visible en el plano digital.');
-    });
+            addMarkerToMap(newItem);
+            modalReport.classList.add('hidden');
+            formReportItem.reset();
+            alert('¡Excelente! El objeto reportado ya se encuentra visible en el plano digital.');
+        });
+    }
 
     // Cerrar sesión
-    logoutBtn.addEventListener('click', () => {
-        appContainer.classList.add('hidden');
-        loginContainer.classList.remove('hidden');
-    });
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            appContainer.classList.add('hidden');
+            loginContainer.classList.remove('hidden');
+        });
+    }
 });
