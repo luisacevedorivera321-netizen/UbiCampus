@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Inicialización del Mapa con límites rígidos de AutoCAD
+    // Inicialización del Mapa
     function initMap() {
         if (map) {
             actualizarMapaYContadores();
@@ -152,12 +152,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 pin: null,
                 claimContact: null,
                 claimAnswer: null,
+                claimUserCode: null,
                 userCode: currentUser.codigo,
                 userName: `${currentUser.nombre} ${currentUser.apellidos}`,
                 date: new Date().toLocaleDateString('es-PE', { hour: '2-digit', minute: '2-digit' })
             };
 
-            // Guardar directamente en Firebase Realtime Database
             reportsRef.child(reportId).set(newReport);
 
             desactivarModoPicker();
@@ -222,6 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let actionButtonHTML = '';
         const isOwner = currentUser && currentUser.codigo === item.userCode;
+        const isClaimer = currentUser && currentUser.codigo === item.claimUserCode;
 
         if (item.status === 'verifying') {
             if (isOwner) {
@@ -234,8 +235,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button onclick="aprobarReclamo(${item.id})" style="width: 100%; background: #16a34a; color: white; border: none; padding: 6px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; margin-bottom: 5px;">✔️ Aprobar y Generar PIN</button>
                     <button onclick="rechazarReclamo(${item.id})" style="width: 100%; background: #dc2626; color: white; border: none; padding: 6px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;">❌ Rechazar</button>
                 `;
+            } else if (isClaimer) {
+                actionButtonHTML = `<p style="font-size:11px; color: #ea580c; font-weight:bold; text-align:center;">⏳ Enviaste tu respuesta. Esperando que el publicador la apruebe...</p>`;
             } else {
-                actionButtonHTML = `<p style="font-size:11px; color: #ea580c; font-weight:bold; text-align:center;">⏳ Esperando que el publicador apruebe el reclamo...</p>`;
+                actionButtonHTML = `<p style="font-size:11px; color: #64748b; font-weight:bold; text-align:center;">🔒 Otro estudiante está reclamando este objeto actualmente.</p>`;
             }
         } else if (item.status === 'approved') {
             if (isOwner) {
@@ -245,8 +248,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         🔑 Finalizar (Ingresar PIN)
                     </button>
                 `;
+            } else if (isClaimer) {
+                actionButtonHTML = `<p style="font-size:11px; color: #16a34a; font-weight:bold; text-align:center;">✅ ¡Reclamo Aprobado! El publicador te contactará pronto.</p>`;
             } else {
-                actionButtonHTML = `<p style="font-size:11px; color: #16a34a; font-weight:bold; text-align:center;">✅ Reclamo Aprobado. El publicador te contactará pronto.</p>`;
+                actionButtonHTML = `<p style="font-size:11px; color: #64748b; font-weight:bold; text-align:center;">🔒 Este objeto ya tiene un reclamo aprobado en proceso de entrega.</p>`;
             }
         } else {
             if (!isOwner) {
@@ -271,7 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
         markersMap.set(item.id, marker);
     }
 
-    // Flujo de Verificación Humana con Firebase
+    // Flujo de Verificación
     window.solicitarReclamo = function(id) {
         const item = reports.find(r => r.id === id);
         if (!item) return;
@@ -293,7 +298,8 @@ document.addEventListener('DOMContentLoaded', () => {
             reportsRef.child(reportId).update({
                 status: 'verifying',
                 claimAnswer: answerVal,
-                claimContact: contactVal
+                claimContact: contactVal,
+                claimUserCode: currentUser.codigo
             });
 
             modalClaim.classList.add('hidden');
@@ -318,7 +324,8 @@ document.addEventListener('DOMContentLoaded', () => {
         reportsRef.child(id).update({
             status: 'active',
             claimAnswer: null,
-            claimContact: null
+            claimContact: null,
+            claimUserCode: null
         });
 
         alert("❌ Reclamo rechazado. El objeto vuelve a estar activo en el plano.");
