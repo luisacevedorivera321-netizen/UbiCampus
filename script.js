@@ -56,18 +56,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 2000);
     });
 
-   // Función para Cargar el Plano Interactivo de AutoCAD
+  // Función para Cargar el Plano Interactivo de AutoCAD
     function initMap() {
         if (map) return; // Si ya fue creado, no duplicar
 
         // Dimensiones virtuales del plano [Alto, Ancho]
         const bounds = [[0, 0], [1000, 1800]];
 
-        // Crear instancia en modo Plano Simple (sin coordenadas GPS)
+        // Crear instancia en modo Plano Simple con restricciones de desplazamiento
         map = L.map('map', {
             crs: L.CRS.Simple,
             minZoom: -1,
             maxZoom: 3,
+            maxBounds: bounds,          // Limita el mapa únicamente a la imagen
+            maxBoundsViscosity: 1.0,     // Bloquea rígidamente para que no "rebote" fuera del borde
             attributionControl: false
         });
 
@@ -80,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Agregar los objetos iniciales al mapa
         initialItems.forEach(item => addMarkerToMap(item));
 
-        // Recalcular tamaño para evitar cuadros grises
+        // Recalcular tamaño para evitar descalibres
         setTimeout(() => {
             map.invalidateSize();
         }, 200);
