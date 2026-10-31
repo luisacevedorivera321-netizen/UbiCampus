@@ -21,13 +21,13 @@
         </div>
     </div>
 
-    <!-- BANNER DE INSTRUCCIÓN PARA SELECCIONAR UBICACIÓN -->
+    <!-- BANNER DE INSTRUCCIÓN -->
     <div id="map-picker-banner" class="picker-banner hidden">
         <span>📍 <strong>Haz clic en la zona exacta del plano</strong> donde se perdió o halló el objeto.</span>
         <button id="cancel-picker-btn" class="btn-cancel-picker">Cancelar</button>
     </div>
 
-    <!-- 1. PANTALLA DE ACCESO -->
+    <!-- PANTALLA DE ACCESO -->
     <div id="login-container">
         <div class="login-image"></div>
         <div class="login-form-section">
@@ -44,45 +44,35 @@
                 <form id="login-form" onsubmit="return false;">
                     <div class="input-group">
                         <div class="input-wrapper">
-                            <span class="field-icon">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                            </span>
+                            <span class="field-icon">👤</span>
                             <span class="field-divider"></span>
-                            <input type="text" id="nombre" required placeholder="Nombres*" pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+" title="Ingresa solo letras y espacios">
+                            <input type="text" id="nombre" required placeholder="Nombres*" pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+">
                         </div>
                     </div>
 
                     <div class="input-group">
                         <div class="input-wrapper">
-                            <span class="field-icon">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-3-3.87"></path><path d="M7 23v-2a4 4 0 0 1 3-3.87"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path></svg>
-                            </span>
+                            <span class="field-icon">👤</span>
                             <span class="field-divider"></span>
-                            <input type="text" id="apellidos" required placeholder="Apellidos*" pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+" title="Ingresa solo letras y espacios">
+                            <input type="text" id="apellidos" required placeholder="Apellidos*" pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+">
                         </div>
                     </div>
 
                     <div class="input-group">
                         <div class="input-wrapper">
-                            <span class="field-icon">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><line x1="7" y1="8" x2="17" y2="8"></line><line x1="7" y1="12" x2="13" y2="12"></line><line x1="7" y1="16" x2="10" y2="16"></line></svg>
-                            </span>
+                            <span class="field-icon">🆔</span>
                             <span class="field-divider"></span>
-                            <input type="text" id="codigo" required placeholder="Código de Estudiante*" pattern="[0-9]+" title="Ingresa solo números">
+                            <input type="text" id="codigo" required placeholder="Código de Estudiante*" pattern="[0-9]+">
                         </div>
                     </div>
 
                     <button type="button" id="btn-login-submit" class="btn-primary">Ingresar al Sistema</button>
                 </form>
-
-                <div class="login-footer">
-                    <p>Acceso exclusivo para la comunidad universitaria</p>
-                </div>
             </div>
         </div>
     </div>
 
-    <!-- 2. PANTALLA PRINCIPAL -->
+    <!-- PANTALLA PRINCIPAL -->
     <div id="app-container" class="hidden">
         <nav class="navbar">
             <div class="nav-brand-container">
@@ -119,37 +109,24 @@
                 </div>
 
                 <div class="action-panel">
-                    <button id="btn-open-report-found" class="btn-action report">
-                        <span>🟢 Reportar Objeto Encontrado</span>
-                    </button>
-                    <button id="btn-open-report-lost" class="btn-action search">
-                        <span>🔴 Reportar Objeto Perdido</span>
-                    </button>
+                    <button id="btn-open-report-found" class="btn-action report">🟢 Reportar Objeto Encontrado</button>
+                    <button id="btn-open-report-lost" class="btn-action search">🔴 Reportar Objeto Perdido</button>
                 </div>
 
                 <div class="filter-section">
                     <h3>Filtrar en Mapa</h3>
                     <div class="filter-options">
                         <button class="filter-chip active" data-filter="all">Todos</button>
-                        <button class="filter-chip lost-chip" data-filter="lost">🔴 Perdidos</button>
-                        <button class="filter-chip found-chip" data-filter="found">🟢 Encontrados</button>
-                        <button class="filter-chip verifying-chip" data-filter="verifying">🟠 En Verificación</button>
+                        <button class="filter-chip" data-filter="lost">🔴 Perdidos</button>
+                        <button class="filter-chip" data-filter="found">🟢 Encontrados</button>
+                        <button class="filter-chip" data-filter="verifying">🟠 En Verificación</button>
                     </div>
-                </div>
-
-                <div class="map-legend">
-                    <h4>Leyenda de Marcadores</h4>
-                    <ul>
-                        <li><span class="dot red"></span> Objeto Buscado por Estudiante</li>
-                        <li><span class="dot green"></span> Objeto Hallado en Custodia</li>
-                        <li><span class="dot orange"></span> Proceso de Devolución Activo</li>
-                    </ul>
                 </div>
             </aside>
 
             <main class="map-container-wrapper">
                 <div class="map-header">
-                    <h3>🗺️ Plano Digital Interactivo - UbiCampus</h3>
+                    <h3>🗺️ Plano Digital Interactivo</h3>
                     <span class="live-indicator"><span class="blink-dot"></span> Sistema Activo</span>
                 </div>
                 <div id="map"></div>
@@ -168,50 +145,46 @@
                 <input type="hidden" id="item-type-val" value="found">
                 
                 <div class="input-group">
-                    <label for="item-title">Objeto / Artículo*</label>
-                    <input type="text" id="item-title" required placeholder="Ej. Billetera de cuero / Mochila Lenovo">
+                    <label>Objeto / Artículo*</label>
+                    <input type="text" id="item-title" required placeholder="Ej. Billetera de cuero">
                 </div>
                 
                 <div class="input-group">
-                    <label for="item-category">Categoría*</label>
+                    <label>Categoría*</label>
                     <select id="item-category" required>
                         <option value="Documentos / DNI">Documentos / DNI</option>
                         <option value="Celulares / Laptops">Celulares / Laptops</option>
                         <option value="Llaves / Billeteras">Llaves / Billeteras</option>
-                        <option value="Mochilas / Cuadernos">Mochilas / Cuadernos</option>
-                        <option value="Otros">Otros</option>
+                        <option value="Mochilas / Otros">Mochilas / Otros</option>
                     </select>
                 </div>
                 
                 <div class="input-group">
-                    <label for="item-location">Referencia del Área (Pabellón/Aula)*</label>
-                    <input type="text" id="item-location" required placeholder="Ej. Cafetería Central / Pabellón B - Piso 2">
+                    <label>Referencia de Ubicación*</label>
+                    <input type="text" id="item-location" required placeholder="Ej. Pabellón B - Piso 2">
                 </div>
                 
                 <div class="input-group">
-                    <label for="item-desc">Detalles Generales (Sin datos secretos)</label>
-                    <textarea id="item-desc" rows="2" placeholder="Marca, color exterior general..."></textarea>
+                    <label>Detalles Generales (Públicos)</label>
+                    <textarea id="item-desc" rows="2" placeholder="Marca, color exterior..."></textarea>
                 </div>
 
-                <!-- CAPA DE SEGURIDAD: PREGUNTA Y RESPUESTA SECRETA -->
+                <!-- PREGUNTA (SIN RESPUESTA FIJA) -->
                 <div class="security-box">
-                    <h4>🔒 Validación de Propiedad (Seguridad)</h4>
+                    <h4>🔒 Validación de Propiedad</h4>
                     <div class="input-group">
-                        <label for="item-question">Pregunta de Validación para el Dueño*</label>
-                        <input type="text" id="item-question" required placeholder="Ej. ¿De qué color es la funda interior? / ¿Qué llavero tiene?">
-                    </div>
-                    <div class="input-group">
-                        <label for="item-answer">Respuesta Correcta (Secreta)*</label>
-                        <input type="text" id="item-answer" required placeholder="Respuesta exacta para verificar la identidad del dueño">
+                        <label>Pregunta para verificar al dueño*</label>
+                        <input type="text" id="item-question" required placeholder="Ej. ¿Qué foto de fondo de pantalla tiene?">
+                        <p style="font-size: 11px; color:#64748b; margin-top:4px;">Tú revisarás la respuesta del solicitante antes de entregar el objeto.</p>
                     </div>
                 </div>
 
-                <button type="submit" class="btn-primary" style="margin-top: 15px;">Siguiente: Ubicar en el Plano 📍</button>
+                <button type="submit" class="btn-primary" style="margin-top: 15px;">Ubicar en el Plano 📍</button>
             </form>
         </div>
     </div>
 
-    <!-- MODAL DE RECLAMO Y RESPUESTA DE SEGURIDAD -->
+    <!-- MODAL DE RECLAMO -->
     <div id="modal-claim" class="modal-overlay hidden">
         <div class="modal-card">
             <div class="modal-header">
@@ -220,25 +193,24 @@
             </div>
             <form id="form-claim-item">
                 <input type="hidden" id="claim-report-id">
-                
                 <p id="claim-item-name" class="claim-target-name"></p>
                 
                 <div class="security-prompt-card">
-                    <span class="security-badge">Pregunta de Verificación:</span>
+                    <span class="security-badge">Pregunta del publicador:</span>
                     <p id="claim-question-text" class="question-display"></p>
                 </div>
 
                 <div class="input-group" style="margin-top: 15px;">
-                    <label for="claim-user-answer">Tu Respuesta de Validación*</label>
-                    <input type="text" id="claim-user-answer" required placeholder="Ingresa la respuesta exacta...">
+                    <label>Tu Respuesta*</label>
+                    <input type="text" id="claim-user-answer" required placeholder="Describe el detalle oculto...">
                 </div>
 
                 <div class="input-group">
-                    <label for="claim-user-contact">Teléfono / WhatsApp de Contacto*</label>
+                    <label>Teléfono / WhatsApp*</label>
                     <input type="text" id="claim-user-contact" required placeholder="Ej. 987654321">
                 </div>
 
-                <button type="submit" class="btn-primary">Validar y Solicitar PIN 🔑</button>
+                <button type="submit" class="btn-primary">Enviar Respuesta al Publicador ✉️</button>
             </form>
         </div>
     </div>
