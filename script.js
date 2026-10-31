@@ -1,11 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('login-form');
+    const btnLogin = document.getElementById('btn-login');
     const loginContainer = document.getElementById('login-container');
     const appContainer = document.getElementById('app-container');
     const loadingOverlay = document.getElementById('loading-overlay');
     const logoutBtn = document.getElementById('logout-btn');
 
-    // Modales y Controles
+    // Modales
     const modalReport = document.getElementById('modal-report');
     const btnOpenReport = document.getElementById('btn-open-report');
     const closeReportModal = document.getElementById('close-report-modal');
@@ -23,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let map = null;
     let markers = [];
 
-    // Objetos de ejemplo
+    // Objetos iniciales en coordenadas del plano
     const initialItems = [
         { id: 1, lat: 300, lng: 350, title: "Billetera de cuero marrón", type: "found", location: "Cafetería Central", category: "Llaves / Billeteras", date: "Hoy" },
         { id: 2, lat: 750, lng: 500, title: "Llaves de auto Toyota con llavero rojo", type: "found", location: "Pabellón A - Piso 1", category: "Llaves / Billeteras", date: "Ayer" },
@@ -32,40 +33,47 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: 5, lat: 800, lng: 900, title: "Calculadora Científica Casio", type: "lost", location: "Aula 204", category: "Otros", date: "Ayer" }
     ];
 
-    // Evento de Login
+    // Función principal para ingresar al mapa
+    function ejecutarLogin() {
+        const nombreInput = document.getElementById('nombre');
+        const apellidosInput = document.getElementById('apellidos');
+        const codigoInput = document.getElementById('codigo');
+
+        const nombre = nombreInput ? nombreInput.value.trim() : 'Estudiante';
+        const apellidos = apellidosInput ? apellidosInput.value.trim() : '';
+        const codigo = codigoInput ? codigoInput.value.trim() : '00000000';
+
+        if (loadingOverlay) loadingOverlay.classList.remove('hidden');
+
+        setTimeout(() => {
+            const init1 = nombre.charAt(0) || 'U';
+            const init2 = apellidos.charAt(0) || 'C';
+
+            if (displayName) displayName.textContent = `${nombre} ${apellidos}`;
+            if (displayCode) displayCode.textContent = `Cód: ${codigo}`;
+            if (welcomeMessage) welcomeMessage.textContent = `¡Hola, ${nombre}! 👋`;
+            if (profileAvatar) profileAvatar.textContent = (init1 + init2).toUpperCase();
+
+            if (loadingOverlay) loadingOverlay.classList.add('hidden');
+            if (loginContainer) loginContainer.classList.add('hidden');
+            if (appContainer) appContainer.classList.remove('hidden');
+
+            initMap();
+        }, 800);
+    }
+
+    // Vincular clic directo en el botón de login
+    if (btnLogin) {
+        btnLogin.addEventListener('click', ejecutarLogin);
+    }
     if (loginForm) {
         loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
-
-            const nombreVal = (document.getElementById('nombre')?.value || '').trim();
-            const apellidosVal = (document.getElementById('apellidos')?.value || '').trim();
-            const codigoVal = (document.getElementById('codigo')?.value || '').trim();
-
-            if (loadingOverlay) loadingOverlay.classList.remove('hidden');
-
-            setTimeout(() => {
-                const init1 = nombreVal.charAt(0) || 'U';
-                const init2 = apellidosVal.charAt(0) || 'C';
-
-                if (displayName) displayName.textContent = `${nombreVal} ${apellidosVal}`;
-                if (displayCode) displayCode.textContent = `Cód: ${codigoVal}`;
-                if (welcomeMessage) welcomeMessage.textContent = `¡Hola, ${nombreVal}! 👋`;
-                if (profileAvatar) profileAvatar.textContent = (init1 + init2).toUpperCase();
-
-                if (loadingOverlay) loadingOverlay.classList.add('hidden');
-                if (loginContainer) loginContainer.classList.add('hidden');
-                if (appContainer) appContainer.classList.remove('hidden');
-
-                try {
-                    initMap();
-                } catch (err) {
-                    console.error("Error al inicializar el mapa:", err);
-                }
-            }, 800);
+            ejecutarLogin();
         });
     }
 
-    // Configuración del Mapa
+    // Inicialización del Mapa Leaflet en modo Plano
     function initMap() {
         if (map) return;
 
@@ -73,6 +81,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         map = L.map('map', {
             crs: L.CRS.Simple,
+            minZoom: -1,
+            maxZoom: 3,
             maxBounds: bounds,
             maxBoundsViscosity: 1.0,
             attributionControl: false
@@ -83,20 +93,12 @@ document.addEventListener('DOMContentLoaded', () => {
         renderMarkers('all');
 
         setTimeout(() => {
-            if (!map) return;
             map.invalidateSize();
             map.fitBounds(bounds);
-            try {
-                const calculatedMinZoom = map.getBoundsZoom(bounds);
-                map.setMinZoom(calculatedMinZoom);
-                map.setMaxZoom(calculatedMinZoom + 3);
-            } catch (zErr) {
-                map.setMinZoom(-1);
-            }
-        }, 300);
+        }, 250);
     }
 
-    // Renderizado de Marcadores
+    // Renderizar marcadores con soporte de filtros
     function renderMarkers(filterType) {
         markers.forEach(m => map.removeLayer(m));
         markers = [];
@@ -136,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
         markers.push(marker);
     }
 
-    // Eventos de Filtros
+    // Filtros de mapa
     filterChips.forEach(chip => {
         chip.addEventListener('click', (e) => {
             filterChips.forEach(c => c.classList.remove('active'));
@@ -146,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Modales
+    // Control de Modales
     if (btnOpenReport && modalReport) {
         btnOpenReport.addEventListener('click', () => modalReport.classList.remove('hidden'));
     }
@@ -186,7 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Cerrar Sesión
+    // Cerrar sesión
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
             appContainer.classList.add('hidden');
