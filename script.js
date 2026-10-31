@@ -56,43 +56,46 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 2000);
     });
 
- // Función para Cargar el Plano Interactivo de AutoCAD
+ 
+        // Icono rojo para perdidos, verde para encontrados
+        const iconColor = item.type === 'found' ? 'green' : 'red';
+        const 
+            
+       // Función para Cargar el Plano Interactivo de AutoCAD
     function initMap() {
-        if (map) return; // Si ya fue creado, no duplicar
+        if (map) return;
 
-        // Dimensiones virtuales del plano [Alto, Ancho]
         const bounds = [[0, 0], [1000, 1800]];
 
-        // Crear instancia en modo Plano Simple con restricciones de desplazamiento
+        // 1. Inicializar mapa con bloqueo estricto de bordes
         map = L.map('map', {
             crs: L.CRS.Simple,
-            minZoom: -1,
-            maxZoom: 3,
-            maxBounds: bounds,          // Limita el mapa únicamente a la imagen
-            maxBoundsViscosity: 1.0,     // Bloquea rígidamente para que no "rebote" fuera del borde
+            maxBounds: bounds,
+            maxBoundsViscosity: 1.0, // Impide arrastrar fuera de los bordes
             attributionControl: false
         });
 
-        // Montar la imagen exportada de AutoCAD
+        // 2. Montar imagen
         L.imageOverlay('plano-ucv.jpg', bounds).addTo(map);
 
-        // Ajustar la vista para que el plano se encuadre completo
+        // 3. Encuadrar
         map.fitBounds(bounds);
 
-        // Agregar los objetos iniciales al mapa
+        // 4. BLOQUEO DE ZOOM: Ajusta el zoom mínimo exactamente al tamaño del recuadro
+        const minZoomCalculado = map.getBoundsZoom(bounds);
+        map.setMinZoom(minZoomCalculado);
+        map.setMaxZoom(minZoomCalculado + 3);
+
+        // 5. Cargar marcadores
         initialItems.forEach(item => addMarkerToMap(item));
 
-        // Recalcular tamaño para evitar descalibres
         setTimeout(() => {
             map.invalidateSize();
         }, 200);
     }
 
     // Agregar Marcador al Mapa con PopUp estilizado
-    function addMarkerToMap(item) {
-        // Icono rojo para perdidos, verde para encontrados
-        const iconColor = item.type === 'found' ? 'green' : 'red';
-        const customIcon = L.divIcon({
+    function addMarkerToMap(item) {customIcon = L.divIcon({
             className: 'custom-pin',
             html: `<div style="background-color: ${iconColor === 'green' ? '#16a34a' : '#dc2626'}; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 8px rgba(0,0,0,0.4);"></div>`,
             iconSize: [20, 20]
