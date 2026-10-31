@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('login-form');
-    const btnLogin = document.getElementById('btn-login');
     const loginContainer = document.getElementById('login-container');
     const appContainer = document.getElementById('app-container');
     const loadingOverlay = document.getElementById('loading-overlay');
@@ -24,7 +23,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let map = null;
     let markers = [];
 
-    // Objetos iniciales en coordenadas del plano
+    // Dimensiones virtuales del plano de AutoCAD
+    const bounds = [[0, 0], [1000, 1800]];
+
+    // Objetos de ejemplo
     const initialItems = [
         { id: 1, lat: 300, lng: 350, title: "Billetera de cuero marrón", type: "found", location: "Cafetería Central", category: "Llaves / Billeteras", date: "Hoy" },
         { id: 2, lat: 750, lng: 500, title: "Llaves de auto Toyota con llavero rojo", type: "found", location: "Pabellón A - Piso 1", category: "Llaves / Billeteras", date: "Ayer" },
@@ -33,51 +35,42 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: 5, lat: 800, lng: 900, title: "Calculadora Científica Casio", type: "lost", location: "Aula 204", category: "Otros", date: "Ayer" }
     ];
 
-    // Función principal para ingresar al mapa
-    function ejecutarLogin() {
-        const nombreInput = document.getElementById('nombre');
-        const apellidosInput = document.getElementById('apellidos');
-        const codigoInput = document.getElementById('codigo');
-
-        const nombre = nombreInput ? nombreInput.value.trim() : 'Estudiante';
-        const apellidos = apellidosInput ? apellidosInput.value.trim() : '';
-        const codigo = codigoInput ? codigoInput.value.trim() : '00000000';
-
-        if (loadingOverlay) loadingOverlay.classList.remove('hidden');
-
-        setTimeout(() => {
-            const init1 = nombre.charAt(0) || 'U';
-            const init2 = apellidos.charAt(0) || 'C';
-
-            if (displayName) displayName.textContent = `${nombre} ${apellidos}`;
-            if (displayCode) displayCode.textContent = `Cód: ${codigo}`;
-            if (welcomeMessage) welcomeMessage.textContent = `¡Hola, ${nombre}! 👋`;
-            if (profileAvatar) profileAvatar.textContent = (init1 + init2).toUpperCase();
-
-            if (loadingOverlay) loadingOverlay.classList.add('hidden');
-            if (loginContainer) loginContainer.classList.add('hidden');
-            if (appContainer) appContainer.classList.remove('hidden');
-
-            initMap();
-        }, 800);
-    }
-
-    // Vincular clic directo en el botón de login
-    if (btnLogin) {
-        btnLogin.addEventListener('click', ejecutarLogin);
-    }
+    // Evento de Login
     if (loginForm) {
         loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            ejecutarLogin();
+            e.preventDefault(); // Cancela la recarga nativa de la página
+
+            const nombreInput = document.getElementById('nombre');
+            const apellidosInput = document.getElementById('apellidos');
+            const codigoInput = document.getElementById('codigo');
+
+            const nombre = nombreInput ? nombreInput.value.trim() : 'Estudiante';
+            const apellidos = apellidosInput ? apellidosInput.value.trim() : '';
+            const codigo = codigoInput ? codigoInput.value.trim() : '00000000';
+
+            if (loadingOverlay) loadingOverlay.classList.remove('hidden');
+
+            setTimeout(() => {
+                const init1 = nombre.charAt(0) || 'U';
+                const init2 = apellidos.charAt(0) || 'C';
+
+                if (displayName) displayName.textContent = `${nombre} ${apellidos}`;
+                if (displayCode) displayCode.textContent = `Cód: ${codigo}`;
+                if (welcomeMessage) welcomeMessage.textContent = `¡Hola, ${nombre}! 👋`;
+                if (profileAvatar) profileAvatar.textContent = (init1 + init2).toUpperCase();
+
+                if (loadingOverlay) loadingOverlay.classList.add('hidden');
+                if (loginContainer) loginContainer.classList.add('hidden');
+                if (appContainer) appContainer.classList.remove('hidden');
+
+                initMap();
+            }, 800);
         });
     }
 
-    // Inicialización del Mapa Leaflet en modo Plano
+    // Inicializar el mapa de Leaflet
     function initMap() {
         if (map) return;
-
-        const bounds = [[0, 0], [1000, 1800]];
 
         map = L.map('map', {
             crs: L.CRS.Simple,
@@ -93,23 +86,26 @@ document.addEventListener('DOMContentLoaded', () => {
         renderMarkers('all');
 
         setTimeout(() => {
-            map.invalidateSize();
-            map.fitBounds(bounds);
-        }, 250);
+            if (map) {
+                map.invalidateSize();
+                map.fitBounds(bounds);
+            }
+        }, 300);
     }
 
-    // Renderizar marcadores con soporte de filtros
+    // Renderizar marcadores
     function renderMarkers(filterType) {
         markers.forEach(m => map.removeLayer(m));
         markers = [];
 
-        const filtered = filterType === 'all' 
+        const filteredItems = filterType === 'all' 
             ? initialItems 
             : initialItems.filter(item => item.type === filterType);
 
-        filtered.forEach(item => addMarkerToMap(item));
+        filteredItems.forEach(item => addMarkerToMap(item));
     }
 
+    // Agregar marcador individual
     function addMarkerToMap(item) {
         const iconColor = item.type === 'found' ? '#16a34a' : '#dc2626';
         const customIcon = L.divIcon({
@@ -138,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
         markers.push(marker);
     }
 
-    // Filtros de mapa
+    // Lógica de Filtros
     filterChips.forEach(chip => {
         chip.addEventListener('click', (e) => {
             filterChips.forEach(c => c.classList.remove('active'));
@@ -148,7 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Control de Modales
+    // Modales
     if (btnOpenReport && modalReport) {
         btnOpenReport.addEventListener('click', () => modalReport.classList.remove('hidden'));
     }
@@ -156,6 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
         closeReportModal.addEventListener('click', () => modalReport.classList.add('hidden'));
     }
 
+    // Publicar nuevo reporte
     if (formReportItem) {
         formReportItem.addEventListener('submit', (e) => {
             e.preventDefault();
