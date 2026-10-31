@@ -21,7 +21,7 @@
         </div>
     </div>
 
-    <!-- BANNER DE INSTRUCCIÓN PARA SELECCIONAR UBICACIÓN EN EL MAPA -->
+    <!-- BANNER DE INSTRUCCIÓN PARA SELECCIONAR UBICACIÓN -->
     <div id="map-picker-banner" class="picker-banner hidden">
         <span>📍 <strong>Haz clic en la zona exacta del plano</strong> donde se perdió o halló el objeto.</span>
         <button id="cancel-picker-btn" class="btn-cancel-picker">Cancelar</button>
@@ -107,7 +107,6 @@
                     <p>Plano interactivo en tiempo real</p>
                 </div>
 
-                <!-- CONTADORES DINÁMICOS QUE INICIAN EN 0 -->
                 <div class="stats-grid">
                     <div class="stat-card lost">
                         <span class="stat-num" id="count-lost">0</span>
@@ -134,6 +133,7 @@
                         <button class="filter-chip active" data-filter="all">Todos</button>
                         <button class="filter-chip lost-chip" data-filter="lost">🔴 Perdidos</button>
                         <button class="filter-chip found-chip" data-filter="found">🟢 Encontrados</button>
+                        <button class="filter-chip verifying-chip" data-filter="verifying">🟠 En Verificación</button>
                     </div>
                 </div>
 
@@ -142,6 +142,7 @@
                     <ul>
                         <li><span class="dot red"></span> Objeto Buscado por Estudiante</li>
                         <li><span class="dot green"></span> Objeto Hallado en Custodia</li>
+                        <li><span class="dot orange"></span> Proceso de Devolución Activo</li>
                     </ul>
                 </div>
             </aside>
@@ -168,7 +169,7 @@
                 
                 <div class="input-group">
                     <label for="item-title">Objeto / Artículo*</label>
-                    <input type="text" id="item-title" required placeholder="Ej. Billetera de cuero marrón / Mochila Lenovo">
+                    <input type="text" id="item-title" required placeholder="Ej. Billetera de cuero / Mochila Lenovo">
                 </div>
                 
                 <div class="input-group">
@@ -188,11 +189,56 @@
                 </div>
                 
                 <div class="input-group">
-                    <label for="item-desc">Detalles o Señas Particulares</label>
-                    <textarea id="item-desc" rows="2" placeholder="Color, marca o stickers para verificación..."></textarea>
+                    <label for="item-desc">Detalles Generales (Sin datos secretos)</label>
+                    <textarea id="item-desc" rows="2" placeholder="Marca, color exterior general..."></textarea>
                 </div>
 
-                <button type="submit" class="btn-primary">Siguiente: Ubicar en el Plano 📍</button>
+                <!-- CAPA DE SEGURIDAD: PREGUNTA Y RESPUESTA SECRETA -->
+                <div class="security-box">
+                    <h4>🔒 Validación de Propiedad (Seguridad)</h4>
+                    <div class="input-group">
+                        <label for="item-question">Pregunta de Validación para el Dueño*</label>
+                        <input type="text" id="item-question" required placeholder="Ej. ¿De qué color es la funda interior? / ¿Qué llavero tiene?">
+                    </div>
+                    <div class="input-group">
+                        <label for="item-answer">Respuesta Correcta (Secreta)*</label>
+                        <input type="text" id="item-answer" required placeholder="Respuesta exacta para verificar la identidad del dueño">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary" style="margin-top: 15px;">Siguiente: Ubicar en el Plano 📍</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DE RECLAMO Y RESPUESTA DE SEGURIDAD -->
+    <div id="modal-claim" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Verificación de Propiedad 🔒</h3>
+                <button class="close-modal" id="close-claim-modal">&times;</button>
+            </div>
+            <form id="form-claim-item">
+                <input type="hidden" id="claim-report-id">
+                
+                <p id="claim-item-name" class="claim-target-name"></p>
+                
+                <div class="security-prompt-card">
+                    <span class="security-badge">Pregunta de Verificación:</span>
+                    <p id="claim-question-text" class="question-display"></p>
+                </div>
+
+                <div class="input-group" style="margin-top: 15px;">
+                    <label for="claim-user-answer">Tu Respuesta de Validación*</label>
+                    <input type="text" id="claim-user-answer" required placeholder="Ingresa la respuesta exacta...">
+                </div>
+
+                <div class="input-group">
+                    <label for="claim-user-contact">Teléfono / WhatsApp de Contacto*</label>
+                    <input type="text" id="claim-user-contact" required placeholder="Ej. 987654321">
+                </div>
+
+                <button type="submit" class="btn-primary">Validar y Solicitar PIN 🔑</button>
             </form>
         </div>
     </div>
