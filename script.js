@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Montar la imagen exportada de AutoCAD
-        L.imageOverlay('plano-ucv.png', bounds).addTo(map);
+        L.imageOverlay('plano-ucv.jpg', bounds).addTo(map);
 
         // Ajustar la vista para que el plano se encuadre completo
         map.fitBounds(bounds);
