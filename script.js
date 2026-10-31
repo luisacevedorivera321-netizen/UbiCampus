@@ -4,10 +4,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnLoginSubmit = document.getElementById('btn-login-submit');
     const loginContainer = document.getElementById('login-container');
     const appContainer = document.getElementById('app-container');
-    const loadingOverlay = document.getElementById('loading-overlay');
     const logoutBtn = document.getElementById('logout-btn');
 
-    // Modales y Banner
+    // Modales y Reportes
     const modalReport = document.getElementById('modal-report');
     const modalReportTitle = document.getElementById('modal-report-title');
     const btnOpenReportFound = document.getElementById('btn-open-report-found');
@@ -18,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const mapPickerBanner = document.getElementById('map-picker-banner');
     const cancelPickerBtn = document.getElementById('cancel-picker-btn');
 
-    // Modal de Reclamo
+    // Reclamo
     const modalClaim = document.getElementById('modal-claim');
     const closeClaimModal = document.getElementById('close-claim-modal');
     const formClaimItem = document.getElementById('form-claim-item');
@@ -26,25 +25,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const claimItemName = document.getElementById('claim-item-name');
     const claimQuestionText = document.getElementById('claim-question-text');
 
-    // Perfil y Contadores
-    const displayName = document.getElementById('display-name');
-    const displayCode = document.getElementById('display-code');
-    const welcomeMessage = document.getElementById('welcome-message');
-    const profileAvatar = document.getElementById('profile-avatar');
-    const countLost = document.getElementById('count-lost');
-    const countFound = document.getElementById('count-found');
-
     const filterChips = document.querySelectorAll('.filter-chip');
-
     let map = null;
     let markersMap = new Map();
     let isPickingLocation = false;
     let pendingReportData = null;
     let currentFilter = 'all';
-
     const bounds = [[0, 0], [1000, 1800]];
 
-    // Memoria local
     let reports = JSON.parse(localStorage.getItem('ubi_reports')) || [];
     let currentUser = JSON.parse(localStorage.getItem('ubi_session')) || null;
 
@@ -56,329 +44,270 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function procesarAcceso() {
-        const nombreVal = (document.getElementById('nombre')?.value || '').trim();
-        const apellidosVal = (document.getElementById('apellidos')?.value || '').trim();
-        const codigoVal = (document.getElementById('codigo')?.value || '').trim();
+        const nombreVal = document.getElementById('nombre').value.trim();
+        const apellidosVal = document.getElementById('apellidos').value.trim();
+        const codigoVal = document.getElementById('codigo').value.trim();
 
         if (!nombreVal || !apellidosVal || !codigoVal) {
-            alert("Por favor, completa todos los campos del formulario.");
+            alert("Completa todos los campos.");
             return;
         }
 
         currentUser = { nombre: nombreVal, apellidos: apellidosVal, codigo: codigoVal };
         localStorage.setItem('ubi_session', JSON.stringify(currentUser));
-
-        if (loadingOverlay) loadingOverlay.classList.remove('hidden');
-
-        setTimeout(() => {
-            cargarPerfilUI(currentUser);
-            if (loadingOverlay) loadingOverlay.classList.add('hidden');
-            if (loginContainer) loginContainer.classList.add('hidden');
-            if (appContainer) appContainer.classList.remove('hidden');
-            initMap();
-        }, 600);
+        
+        cargarPerfilUI(currentUser);
+        loginContainer.classList.add('hidden');
+        appContainer.classList.remove('hidden');
+        initMap();
     }
 
     function cargarPerfilUI(user) {
-        const init1 = user.nombre.charAt(0) || 'U';
-        const init2 = user.apellidos.charAt(0) || 'C';
-
-        if (displayName) displayName.textContent = `${user.nombre} ${user.apellidos}`;
-        if (displayCode) displayCode.textContent = `Cód: ${user.codigo}`;
-        if (welcomeMessage) welcomeMessage.textContent = `¡Hola, ${user.nombre}! 👋`;
-        if (profileAvatar) profileAvatar.textContent = (init1 + init2).toUpperCase();
+        document.getElementById('display-name').textContent = `${user.nombre} ${user.apellidos}`;
+        document.getElementById('display-code').textContent = `Cód: ${user.codigo}`;
+        document.getElementById('welcome-message').textContent = `¡Hola, ${user.nombre}! 👋`;
+        document.getElementById('profile-avatar').textContent = (user.nombre.charAt(0) + user.apellidos.charAt(0)).toUpperCase();
     }
 
     if (btnLoginSubmit) btnLoginSubmit.addEventListener('click', procesarAcceso);
-    if (loginForm) {
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            procesarAcceso();
-        });
-    }
+    if (loginForm) loginForm.addEventListener('submit', (e) => { e.preventDefault(); procesarAcceso(); });
 
-    // Inicialización del Mapa
     function initMap() {
-        if (map) {
-            actualizarMapaYContadores();
-            return;
-        }
+        if (map) { actualizarMapaYContadores(); return; }
 
-        map = L.map('map', {
-            crs: L.CRS.Simple,
-            maxBounds: bounds,
-            maxBoundsViscosity: 1.0,
-            attributionControl: false
-        });
-
+        map = L.map('map', { crs: L.CRS.Simple, maxBounds: bounds, maxBoundsViscosity: 1.0, attributionControl: false });
         L.imageOverlay('plano-ucv.jpg', bounds).addTo(map);
 
         map.on('click', (e) => {
             if (!isPickingLocation || !pendingReportData) return;
-
-            const lat = Math.round(e.latlng.lat);
-            const lng = Math.round(e.latlng.lng);
-
+            
             const newReport = {
                 id: Date.now(),
                 ...pendingReportData,
-                lat: lat,
-                lng: lng,
-                status: 'active', // active, verifying, claimed
-                pin: null,
-                claimContact: null,
-                userCode: currentUser.codigo,
-                userName: `${currentUser.nombre} ${currentUser.apellidos}`,
+                lat: Math.round(e.latlng.lat), lng: Math.round(e.latlng.lng),
+                status: 'active', pin: null, claimContact: null, claimAnswer: null,
+                userCode: currentUser.codigo, userName: `${currentUser.nombre} ${currentUser.apellidos}`,
                 date: new Date().toLocaleDateString('es-PE', { hour: '2-digit', minute: '2-digit' })
             };
 
             reports.push(newReport);
             guardarReportes();
-
             desactivarModoPicker();
             actualizarMapaYContadores();
-
-            alert('¡Reporte registrado con éxito! El objeto está resguardado mediante validación de seguridad.');
+            alert('¡Reporte publicado en el mapa!');
         });
 
-        setTimeout(() => {
-            if (map) {
-                map.invalidateSize();
-                map.fitBounds(bounds);
-                try {
-                    const minZoomCalc = map.getBoundsZoom(bounds);
-                    map.setMinZoom(minZoomCalc);
-                    map.setMaxZoom(minZoomCalc + 3);
-                } catch (err) {
-                    map.setMinZoom(0);
-                }
-            }
-            actualizarMapaYContadores();
-        }, 300);
+        setTimeout(() => { map.fitBounds(bounds); map.setMinZoom(map.getBoundsZoom(bounds)); actualizarMapaYContadores(); }, 300);
     }
 
-    function guardarReportes() {
-        localStorage.setItem('ubi_reports', JSON.stringify(reports));
-    }
+    function guardarReportes() { localStorage.setItem('ubi_reports', JSON.stringify(reports)); }
 
     function actualizarMapaYContadores() {
         if (!map) return;
-
         markersMap.forEach(marker => map.removeLayer(marker));
         markersMap.clear();
 
         const activeReports = reports.filter(r => r.status !== 'claimed');
-
         let filtered = activeReports;
         if (currentFilter === 'lost' || currentFilter === 'found') {
             filtered = activeReports.filter(r => r.type === currentFilter && r.status === 'active');
         } else if (currentFilter === 'verifying') {
-            filtered = activeReports.filter(r => r.status === 'verifying');
+            filtered = activeReports.filter(r => r.status === 'verifying' || r.status === 'approved');
         }
 
         filtered.forEach(item => addMarkerToMap(item));
-
-        const countLostNum = activeReports.filter(r => r.type === 'lost' && r.status === 'active').length;
-        const countFoundNum = activeReports.filter(r => r.type === 'found' && r.status === 'active').length;
-
-        if (countLost) countLost.textContent = countLostNum;
-        if (countFound) countFound.textContent = countFoundNum;
+        document.getElementById('count-lost').textContent = activeReports.filter(r => r.type === 'lost' && r.status === 'active').length;
+        document.getElementById('count-found').textContent = activeReports.filter(r => r.type === 'found' && r.status === 'active').length;
     }
 
     function addMarkerToMap(item) {
-        let iconColor = '#16a34a'; // Verde por defecto
-        let statusBadge = 'HALLADO EN CUSTODIA';
+        let iconColor = item.type === 'lost' ? '#dc2626' : '#16a34a';
+        let statusBadge = item.type === 'lost' ? 'BUSCADO' : 'HALLADO';
 
-        if (item.status === 'verifying') {
-            iconColor = '#ea580c'; // Naranja (En verificación)
-            statusBadge = 'EN VERIFICACIÓN 🟠';
-        } else if (item.type === 'lost') {
-            iconColor = '#dc2626'; // Rojo (Perdido)
-            statusBadge = 'BUSCADO POR ESTUDIANTE';
+        if (item.status === 'verifying' || item.status === 'approved') {
+            iconColor = '#ea580c';
+            statusBadge = item.status === 'approved' ? 'RECLAMO APROBADO 🟠' : 'EN VERIFICACIÓN 🟠';
         }
 
-        const customIcon = L.divIcon({
-            className: 'custom-pin',
-            html: `<div style="background-color: ${iconColor}; width: 18px; height: 18px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 8px rgba(0,0,0,0.4);"></div>`,
-            iconSize: [22, 22]
-        });
-
-        const marker = L.marker([item.lat, item.lng], { icon: customIcon }).addTo(map);
+        const marker = L.marker([item.lat, item.lng], {
+            icon: L.divIcon({
+                className: 'custom-pin',
+                html: `<div style="background-color: ${iconColor}; width: 18px; height: 18px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 8px rgba(0,0,0,0.4);"></div>`,
+                iconSize: [22, 22]
+            })
+        }).addTo(map);
 
         let actionButtonHTML = '';
+        const isOwner = currentUser.codigo === item.userCode;
 
         if (item.status === 'verifying') {
-            actionButtonHTML = `
-                <div style="background: #fff7ed; border: 1px solid #ffedd5; padding: 6px; border-radius: 6px; margin-bottom: 8px;">
-                    <p style="margin:0; font-size: 10px; color: #c2410c; font-weight: bold;">🔒 Devolución en proceso</p>
-                </div>
-                <button onclick="confirmarEntregaPin(${item.id})" style="width: 100%; background: #ea580c; color: white; border: none; padding: 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;">
-                    🔑 Confirmar Entrega (Ingresar PIN)
-                </button>
-            `;
+            if (isOwner) {
+                // Interfaz para el que reportó (Aprobar / Rechazar)
+                actionButtonHTML = `
+                    <div style="background: #fff7ed; padding: 8px; border-radius: 6px; margin-bottom: 8px; border: 1px solid #fdba74;">
+                        <p style="font-size: 11px; font-weight: bold; color: #c2410c; margin-bottom:2px;">Respuesta recibida:</p>
+                        <p style="font-size: 13px; color: #1e293b; font-style: italic; margin-bottom:4px;">"${item.claimAnswer}"</p>
+                        <p style="font-size: 11px; color: #64748b;">WhatsApp: ${item.claimContact}</p>
+                    </div>
+                    <button onclick="aprobarReclamo(${item.id})" style="width: 100%; background: #16a34a; color: white; border: none; padding: 6px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; margin-bottom: 5px;">✔️ Aprobar y Generar PIN</button>
+                    <button onclick="rechazarReclamo(${item.id})" style="width: 100%; background: #dc2626; color: white; border: none; padding: 6px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;">❌ Rechazar</button>
+                `;
+            } else {
+                actionButtonHTML = `<p style="font-size:11px; color: #ea580c; font-weight:bold; text-align:center;">⏳ Esperando que el publicador apruebe el reclamo...</p>`;
+            }
+        } else if (item.status === 'approved') {
+            if (isOwner) {
+                actionButtonHTML = `
+                    <p style="font-size:11px; color: #64748b; margin-bottom:6px;">Contacta al dueño (${item.claimContact}) y dale su PIN: <b>${item.pin}</b></p>
+                    <button onclick="confirmarEntregaPin(${item.id})" style="width: 100%; background: #ea580c; color: white; border: none; padding: 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;">
+                        🔑 Finalizar (Ingresar PIN)
+                    </button>
+                `;
+            } else {
+                actionButtonHTML = `<p style="font-size:11px; color: #16a34a; font-weight:bold; text-align:center;">✅ Reclamo Aprobado. El publicador te contactará pronto.</p>`;
+            }
         } else {
-            actionButtonHTML = `
-                <button onclick="solicitarReclamo(${item.id})" style="width: 100%; background: #1e3a8a; color: white; border: none; padding: 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;">
-                    🔒 Solicitar Reclamo (Responder Pregunta)
-                </button>
-            `;
+            if (!isOwner) {
+                actionButtonHTML = `
+                    <button onclick="solicitarReclamo(${item.id})" style="width: 100%; background: #1e3a8a; color: white; border: none; padding: 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;">
+                        🔒 Solicitar Reclamo
+                    </button>`;
+            } else {
+                actionButtonHTML = `<p style="font-size:10px; color: #64748b; text-align:center; font-style:italic;">Tú publicaste esto.</p>`;
+            }
         }
 
-        const popupContent = `
+        marker.bindPopup(`
             <div style="font-family: Roboto, sans-serif; padding: 4px; min-width: 190px;">
-                <span style="display:inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; color: white; background-color: ${iconColor}; margin-bottom: 6px;">
-                    ${statusBadge}
-                </span>
+                <span style="display:inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; color: white; background-color: ${iconColor}; margin-bottom: 6px;">${statusBadge}</span>
                 <h4 style="margin: 0 0 4px 0; color: #1e3a8a; font-size: 14px;">${item.title}</h4>
                 <p style="margin: 0; font-size: 12px; color: #475569;">📍 ${item.location}</p>
-                <p style="margin: 2px 0; font-size: 11px; color: #64748b;">Categoría: ${item.category}</p>
-                ${item.desc ? `<p style="margin: 4px 0; font-size: 11px; color: #334155; font-style: italic;">"${item.desc}"</p>` : ''}
-                <p style="margin: 4px 0 8px 0; font-size: 10px; color: #94a3b8;">Por: ${item.userName} (${item.date})</p>
+                <p style="margin: 4px 0 8px 0; font-size: 10px; color: #94a3b8;">Por: ${item.userName}</p>
                 ${actionButtonHTML}
             </div>
-        `;
-
-        marker.bindPopup(popupContent);
+        `);
         markersMap.set(item.id, marker);
     }
 
-    // --- PROCESO DE VALIDACIÓN DE SEGURIDAD (PASOS 1 Y 2) ---
+    // FLUJO DE VERIFICACIÓN HUMANA
     window.solicitarReclamo = function(id) {
         const item = reports.find(r => r.id === id);
         if (!item) return;
-
-        if (claimReportId) claimReportId.value = item.id;
-        if (claimItemName) claimItemName.textContent = `Objeto: ${item.title}`;
-        if (claimQuestionText) claimQuestionText.textContent = item.question || "¿Qué característica única tiene el objeto?";
-        
-        if (modalClaim) modalClaim.classList.remove('hidden');
+        claimReportId.value = item.id;
+        claimItemName.textContent = `Objeto: ${item.title}`;
+        claimQuestionText.textContent = item.question;
+        modalClaim.classList.remove('hidden');
     };
 
-    if (closeClaimModal && modalClaim) {
-        closeClaimModal.addEventListener('click', () => modalClaim.classList.add('hidden'));
-    }
+    if (closeClaimModal) closeClaimModal.addEventListener('click', () => modalClaim.classList.add('hidden'));
 
-    if (formClaimItem) {
-        formClaimItem.addEventListener('submit', (e) => {
-            e.preventDefault();
+    if (formClaimItem) formClaimItem.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const item = reports.find(r => r.id === parseInt(claimReportId.value));
+        if (!item) return;
 
-            const id = parseInt(claimReportId.value);
-            const userAns = document.getElementById('claim-user-answer').value.trim();
-            const userContact = document.getElementById('claim-user-contact').value.trim();
+        item.status = 'verifying';
+        item.claimAnswer = document.getElementById('claim-user-answer').value.trim();
+        item.claimContact = document.getElementById('claim-user-contact').value.trim();
+        guardarReportes();
 
-            const item = reports.find(r => r.id === id);
-            if (!item) return;
+        modalClaim.classList.add('hidden');
+        formClaimItem.reset();
+        actualizarMapaYContadores();
+        alert("✉️ Tu respuesta ha sido enviada.\nEl estudiante que encontró el objeto la revisará y te contactará por WhatsApp si es correcta.");
+    });
 
-            // Comparar respuesta (ignora mayúsculas/minúsculas)
-            if (userAns.toLowerCase() === (item.answer || '').toLowerCase()) {
-                // Generar PIN aleatorio de 4 dígitos
-                const pinGenerado = Math.floor(1000 + Math.random() * 9000).toString();
+    window.aprobarReclamo = function(id) {
+        const item = reports.find(r => r.id === id);
+        if (!item) return;
+        
+        const pinGenerado = Math.floor(1000 + Math.random() * 9000).toString();
+        item.status = 'approved';
+        item.pin = pinGenerado;
+        guardarReportes();
+        actualizarMapaYContadores();
+        alert(`✅ Reclamo Aprobado.\n\nEl sistema ha generado el PIN: [ ${pinGenerado} ]\n\nPor favor, escribe un WhatsApp al número ${item.claimContact} indicándole que aprobaste su respuesta y entrégale este PIN para que te lo diga cuando se encuentren físicamente.`);
+    };
 
-                item.status = 'verifying';
-                item.pin = pinGenerado;
-                item.claimContact = userContact;
-                guardarReportes();
+    window.rechazarReclamo = function(id) {
+        const item = reports.find(r => r.id === id);
+        if (!item) return;
+        
+        item.status = 'active';
+        item.claimAnswer = null;
+        item.claimContact = null;
+        guardarReportes();
+        actualizarMapaYContadores();
+        alert("❌ Reclamo rechazado. El objeto vuelve a estar disponible para la comunidad.");
+    };
 
-                modalClaim.classList.add('hidden');
-                formClaimItem.reset();
-                actualizarMapaYContadores();
-
-                alert(`¡RESPUESTA CORRECTA! 🟢\n\nSe ha generado tu Código PIN de entrega: [ ${pinGenerado} ]\n\nEl objeto ha cambiado a estado "EN VERIFICACIÓN 🟠" en el plano. Presenta este PIN al momento de la entrega física para retirar el pin.`);
-            } else {
-                alert("❌ Respuesta incorrecta. Por motivos de seguridad, la respuesta no coincide con el registro del publicador.");
-            }
-        });
-    }
-
-    // --- PROCESO DE ENTREGA FINAL POR PIN (PASO 3) ---
     window.confirmarEntregaPin = function(id) {
         const item = reports.find(r => r.id === id);
         if (!item) return;
-
-        const pinIngresado = prompt(`Confirmar Devolución para: "${item.title}"\n\nIngresa el Código PIN de 4 dígitos proporcionado al reclamante:`);
-
-        if (pinIngresado === null) return; // Cancelado
+        const pinIngresado = prompt(`Ingresa el PIN de 4 dígitos proporcionado por el dueño al momento de la entrega:`);
+        if (pinIngresado === null) return;
 
         if (pinIngresado.trim() === item.pin) {
             item.status = 'claimed';
             guardarReportes();
             actualizarMapaYContadores();
-            alert("¡ENTREGA CONFIRMADA EXITOSAMENTE! 🎉\n\nEl reporte ha sido cerrado y retirado del plano digital.");
+            alert("¡ENTREGA CONFIRMADA EXITOSAMENTE! 🎉\nEl reporte ha sido cerrado.");
         } else {
-            alert("❌ Código PIN incorrecto. No se puede retirar el objeto del mapa.");
+            alert("❌ PIN incorrecto.");
         }
     };
 
-    // Modales y Picker
+    // Control de Formularios y Filtros
     function abrirModalFormulario(tipo) {
-        if (itemTypeVal) itemTypeVal.value = tipo;
-        if (modalReportTitle) {
-            modalReportTitle.textContent = tipo === 'found' 
-                ? 'Reportar Objeto Encontrado 🟢' 
-                : 'Reportar Objeto Perdido 🔴';
-        }
-        if (modalReport) modalReport.classList.remove('hidden');
+        itemTypeVal.value = tipo;
+        modalReportTitle.textContent = tipo === 'found' ? 'Reportar Objeto Encontrado 🟢' : 'Reportar Objeto Perdido 🔴';
+        modalReport.classList.remove('hidden');
     }
 
     if (btnOpenReportFound) btnOpenReportFound.addEventListener('click', () => abrirModalFormulario('found'));
     if (btnOpenReportLost) btnOpenReportLost.addEventListener('click', () => abrirModalFormulario('lost'));
+    if (closeReportModal) closeReportModal.addEventListener('click', () => modalReport.classList.add('hidden'));
 
-    if (closeReportModal && modalReport) {
-        closeReportModal.addEventListener('click', () => modalReport.classList.add('hidden'));
-    }
-
-    if (formReportItem) {
-        formReportItem.addEventListener('submit', (e) => {
-            e.preventDefault();
-
-            pendingReportData = {
-                title: document.getElementById('item-title').value.trim(),
-                category: document.getElementById('item-category').value,
-                location: document.getElementById('item-location').value.trim(),
-                desc: document.getElementById('item-desc').value.trim(),
-                question: document.getElementById('item-question').value.trim(),
-                answer: document.getElementById('item-answer').value.trim(),
-                type: itemTypeVal.value
-            };
-
-            modalReport.classList.add('hidden');
-            formReportItem.reset();
-            activarModoPicker();
-        });
-    }
+    if (formReportItem) formReportItem.addEventListener('submit', (e) => {
+        e.preventDefault();
+        pendingReportData = {
+            title: document.getElementById('item-title').value.trim(),
+            category: document.getElementById('item-category').value,
+            location: document.getElementById('item-location').value.trim(),
+            desc: document.getElementById('item-desc').value.trim(),
+            question: document.getElementById('item-question').value.trim(),
+            type: itemTypeVal.value
+        };
+        modalReport.classList.add('hidden');
+        formReportItem.reset();
+        activarModoPicker();
+    });
 
     function activarModoPicker() {
         isPickingLocation = true;
-        if (mapPickerBanner) mapPickerBanner.classList.remove('hidden');
-        if (map) map.getContainer().style.cursor = 'crosshair';
+        mapPickerBanner.classList.remove('hidden');
+        map.getContainer().style.cursor = 'crosshair';
     }
 
     function desactivarModoPicker() {
         isPickingLocation = false;
         pendingReportData = null;
-        if (mapPickerBanner) mapPickerBanner.classList.add('hidden');
-        if (map) map.getContainer().style.cursor = '';
+        mapPickerBanner.classList.add('hidden');
+        map.getContainer().style.cursor = '';
     }
-
     if (cancelPickerBtn) cancelPickerBtn.addEventListener('click', desactivarModoPicker);
 
-    // Filtros
-    filterChips.forEach(chip => {
-        chip.addEventListener('click', (e) => {
-            filterChips.forEach(c => c.classList.remove('active'));
-            e.currentTarget.classList.add('active');
-            currentFilter = e.currentTarget.getAttribute('data-filter');
-            actualizarMapaYContadores();
-        });
-    });
+    filterChips.forEach(chip => chip.addEventListener('click', (e) => {
+        filterChips.forEach(c => c.classList.remove('active'));
+        e.currentTarget.classList.add('active');
+        currentFilter = e.currentTarget.getAttribute('data-filter');
+        actualizarMapaYContadores();
+    }));
 
-    // Logout
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-            localStorage.removeItem('ubi_session');
-            currentUser = null;
-            appContainer.classList.add('hidden');
-            loginContainer.classList.remove('hidden');
-        });
-    }
+    if (logoutBtn) logoutBtn.addEventListener('click', () => {
+        localStorage.removeItem('ubi_session');
+        currentUser = null;
+        appContainer.classList.add('hidden');
+        loginContainer.classList.remove('hidden');
+    });
 });
