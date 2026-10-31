@@ -20,13 +20,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let map = null;
     let markers = [];
 
-    // Objetos de ejemplo registrados en el Campus UCV Chimbote
+   // Objetos de ejemplo con coordenadas en el plano de AutoCAD (Y, X)
     const initialItems = [
-        { lat: -9.0881, lng: -78.5775, title: "Billetera de cuero marrón", type: "found", location: "Cafetería Central", category: "Llaves / Billeteras", date: "Hoy" },
-        { lat: -9.0885, lng: -78.5770, title: "Llaves de auto Toyota con llavero rojo", type: "found", location: "Pabellón A - Piso 1", category: "Llaves / Billeteras", date: "Ayer" },
-        { lat: -9.0878, lng: -78.5780, title: "Mochila Lenovo negra", type: "lost", location: "Laboratorio de Cómputo 3", category: "Mochilas / Cuadernos", date: "Hace 2 días" },
-        { lat: -9.0883, lng: -78.5778, title: "DNI a nombre de Carlos Ruiz", type: "found", location: "Cancha Deportiva", category: "Documentos / DNI", date: "Hoy" },
-        { lat: -9.0879, lng: -78.5772, title: "Calculadora Científica Casio", type: "lost", location: "Aula 204", category: "Otros", date: "Ayer" }
+        { lat: 300, lng: 350, title: "Billetera de cuero marrón", type: "found", location: "Cafetería Central", category: "Llaves / Billeteras", date: "Hoy" },
+        { lat: 750, lng: 500, title: "Llaves de auto Toyota con llavero rojo", type: "found", location: "Pabellón A - Piso 1", category: "Llaves / Billeteras", date: "Ayer" },
+        { lat: 600, lng: 1200, title: "Mochila Lenovo negra", type: "lost", location: "Laboratorio de Cómputo 3", category: "Mochilas / Cuadernos", date: "Hace 2 días" },
+        { lat: 250, lng: 1500, title: "DNI a nombre de Carlos Ruiz", type: "found", location: "Cancha Deportiva", category: "Documentos / DNI", date: "Hoy" },
+        { lat: 800, lng: 900, title: "Calculadora Científica Casio", type: "lost", location: "Aula 204", category: "Otros", date: "Ayer" }
     ];
 
     // Evento de Login
@@ -56,24 +56,34 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 2000);
     });
 
-    // Función para Cargar el Mapa Interactivo
+   // Función para Cargar el Plano Interactivo de AutoCAD
     function initMap() {
         if (map) return; // Si ya fue creado, no duplicar
 
-        // Coordenadas aproximadas del Campus UCV Chimbote
-        const campusCenter = [-9.0881, -78.5775];
+        // Dimensiones virtuales del plano [Alto, Ancho]
+        const bounds = [[0, 0], [1000, 1800]];
 
-        // Crear instancia del mapa Leaflet
-        map = L.map('map').setView(campusCenter, 18);
+        // Crear instancia en modo Plano Simple (sin coordenadas GPS)
+        map = L.map('map', {
+            crs: L.CRS.Simple,
+            minZoom: -1,
+            maxZoom: 3,
+            attributionControl: false
+        });
 
-        // Cargar capa de azulejos (OpenStreetMap)
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '© OpenStreetMap - UbiCampus'
-        }).addTo(map);
+        // Montar la imagen exportada de AutoCAD
+        L.imageOverlay('plano-ucv.png', bounds).addTo(map);
 
-        // Agregar los objetos al mapa
+        // Ajustar la vista para que el plano se encuadre completo
+        map.fitBounds(bounds);
+
+        // Agregar los objetos iniciales al mapa
         initialItems.forEach(item => addMarkerToMap(item));
+
+        // Recalcular tamaño para evitar cuadros grises
+        setTimeout(() => {
+            map.invalidateSize();
+        }, 200);
     }
 
     // Agregar Marcador al Mapa con PopUp estilizado
@@ -117,10 +127,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const category = document.getElementById('item-category').value;
         const location = document.getElementById('item-location').value;
 
-        // Crear marcador con pequeña variación aleatoria de ubicación dentro del campus
+       // Crear marcador en una ubicación dentro del plano
         const newItem = {
-            lat: -9.0881 + (Math.random() - 0.5) * 0.001,
-            lng: -78.5775 + (Math.random() - 0.5) * 0.001,
+            lat: Math.floor(Math.random() * 600) + 200,
+            lng: Math.floor(Math.random() * 1200) + 300,
             title: title,
             type: "found",
             location: location,
