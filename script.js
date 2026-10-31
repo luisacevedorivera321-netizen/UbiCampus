@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingOverlay = document.getElementById('loading-overlay');
     const logoutBtn = document.getElementById('logout-btn');
 
-    // Modales y Banner Picker
+    // Modales y Banner
     const modalReport = document.getElementById('modal-report');
     const modalReportTitle = document.getElementById('modal-report-title');
     const btnOpenReportFound = document.getElementById('btn-open-report-found');
@@ -18,7 +18,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const mapPickerBanner = document.getElementById('map-picker-banner');
     const cancelPickerBtn = document.getElementById('cancel-picker-btn');
 
-    // Elementos Perfil y Contadores
+    // Modal de Reclamo
+    const modalClaim = document.getElementById('modal-claim');
+    const closeClaimModal = document.getElementById('close-claim-modal');
+    const formClaimItem = document.getElementById('form-claim-item');
+    const claimReportId = document.getElementById('claim-report-id');
+    const claimItemName = document.getElementById('claim-item-name');
+    const claimQuestionText = document.getElementById('claim-question-text');
+
+    // Perfil y Contadores
     const displayName = document.getElementById('display-name');
     const displayCode = document.getElementById('display-code');
     const welcomeMessage = document.getElementById('welcome-message');
@@ -26,24 +34,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const countLost = document.getElementById('count-lost');
     const countFound = document.getElementById('count-found');
 
-    // Filtros
     const filterChips = document.querySelectorAll('.filter-chip');
 
-    // Variables de Estado
     let map = null;
-    let markersMap = new Map(); // Guarda la referencia de marcadores id -> L.marker
+    let markersMap = new Map();
     let isPickingLocation = false;
     let pendingReportData = null;
     let currentFilter = 'all';
 
-    // Dimensiones virtuales del plano de AutoCAD
     const bounds = [[0, 0], [1000, 1800]];
 
-    // --- ALMACENAMIENTO LOCAL Y PERSISTENCIA DE SESIÓN ---
+    // Memoria local
     let reports = JSON.parse(localStorage.getItem('ubi_reports')) || [];
     let currentUser = JSON.parse(localStorage.getItem('ubi_session')) || null;
 
-    // Verificar sesión iniciada automáticamente
     if (currentUser) {
         cargarPerfilUI(currentUser);
         loginContainer.classList.add('hidden');
@@ -51,7 +55,6 @@ document.addEventListener('DOMContentLoaded', () => {
         initMap();
     }
 
-    // Procesar Login
     function procesarAcceso() {
         const nombreVal = (document.getElementById('nombre')?.value || '').trim();
         const apellidosVal = (document.getElementById('apellidos')?.value || '').trim();
@@ -72,7 +75,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (loadingOverlay) loadingOverlay.classList.add('hidden');
             if (loginContainer) loginContainer.classList.add('hidden');
             if (appContainer) appContainer.classList.remove('hidden');
-
             initMap();
         }, 600);
     }
@@ -95,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- INICIALIZACIÓN Y CONTROL DEL MAPA LEAFLET ---
+    // Inicialización del Mapa
     function initMap() {
         if (map) {
             actualizarMapaYContadores();
@@ -111,7 +113,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         L.imageOverlay('plano-ucv.jpg', bounds).addTo(map);
 
-        // Capturar clic en el plano para guardar posición del objeto
         map.on('click', (e) => {
             if (!isPickingLocation || !pendingReportData) return;
 
@@ -123,7 +124,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 ...pendingReportData,
                 lat: lat,
                 lng: lng,
-                status: 'active',
+                status: 'active', // active, verifying, claimed
+                pin: null,
+                claimContact: null,
                 userCode: currentUser.codigo,
                 userName: `${currentUser.nombre} ${currentUser.apellidos}`,
                 date: new Date().toLocaleDateString('es-PE', { hour: '2-digit', minute: '2-digit' })
@@ -132,11 +135,10 @@ document.addEventListener('DOMContentLoaded', () => {
             reports.push(newReport);
             guardarReportes();
 
-            // Desactivar modo de captura
             desactivarModoPicker();
             actualizarMapaYContadores();
 
-            alert('¡Reporte publicado con éxito! El pin ya es visible en el plano digital.');
+            alert('¡Reporte registrado con éxito! El objeto está resguardado mediante validación de seguridad.');
         });
 
         setTimeout(() => {
@@ -155,7 +157,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 300);
     }
 
-    // --- RENDERIZADO Y ACTUALIZACIÓN DE ESTADO ---
     function guardarReportes() {
         localStorage.setItem('ubi_reports', JSON.stringify(reports));
     }
@@ -163,31 +164,38 @@ document.addEventListener('DOMContentLoaded', () => {
     function actualizarMapaYContadores() {
         if (!map) return;
 
-        // Limpiar marcadores existentes del plano
         markersMap.forEach(marker => map.removeLayer(marker));
         markersMap.clear();
 
-        const activeReports = reports.filter(r => r.status === 'active');
+        const activeReports = reports.filter(r => r.status !== 'claimed');
 
-        // Filtrar según botón de la interfaz
-        const filtered = currentFilter === 'all' 
-            ? activeReports 
-            : activeReports.filter(r => r.type === currentFilter);
+        let filtered = activeReports;
+        if (currentFilter === 'lost' || currentFilter === 'found') {
+            filtered = activeReports.filter(r => r.type === currentFilter && r.status === 'active');
+        } else if (currentFilter === 'verifying') {
+            filtered = activeReports.filter(r => r.status === 'verifying');
+        }
 
-        // Renderizar pins
         filtered.forEach(item => addMarkerToMap(item));
 
-        // Actualizar números dinámicos de las tarjetas
-        const countLostNum = activeReports.filter(r => r.type === 'lost').length;
-        const countFoundNum = activeReports.filter(r => r.type === 'found').length;
+        const countLostNum = activeReports.filter(r => r.type === 'lost' && r.status === 'active').length;
+        const countFoundNum = activeReports.filter(r => r.type === 'found' && r.status === 'active').length;
 
         if (countLost) countLost.textContent = countLostNum;
         if (countFound) countFound.textContent = countFoundNum;
     }
 
     function addMarkerToMap(item) {
-        const isFound = item.type === 'found';
-        const iconColor = isFound ? '#16a34a' : '#dc2626';
+        let iconColor = '#16a34a'; // Verde por defecto
+        let statusBadge = 'HALLADO EN CUSTODIA';
+
+        if (item.status === 'verifying') {
+            iconColor = '#ea580c'; // Naranja (En verificación)
+            statusBadge = 'EN VERIFICACIÓN 🟠';
+        } else if (item.type === 'lost') {
+            iconColor = '#dc2626'; // Rojo (Perdido)
+            statusBadge = 'BUSCADO POR ESTUDIANTE';
+        }
 
         const customIcon = L.divIcon({
             className: 'custom-pin',
@@ -197,19 +205,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const marker = L.marker([item.lat, item.lng], { icon: customIcon }).addTo(map);
 
+        let actionButtonHTML = '';
+
+        if (item.status === 'verifying') {
+            actionButtonHTML = `
+                <div style="background: #fff7ed; border: 1px solid #ffedd5; padding: 6px; border-radius: 6px; margin-bottom: 8px;">
+                    <p style="margin:0; font-size: 10px; color: #c2410c; font-weight: bold;">🔒 Devolución en proceso</p>
+                </div>
+                <button onclick="confirmarEntregaPin(${item.id})" style="width: 100%; background: #ea580c; color: white; border: none; padding: 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;">
+                    🔑 Confirmar Entrega (Ingresar PIN)
+                </button>
+            `;
+        } else {
+            actionButtonHTML = `
+                <button onclick="solicitarReclamo(${item.id})" style="width: 100%; background: #1e3a8a; color: white; border: none; padding: 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;">
+                    🔒 Solicitar Reclamo (Responder Pregunta)
+                </button>
+            `;
+        }
+
         const popupContent = `
-            <div style="font-family: Roboto, sans-serif; padding: 4px; min-width: 180px;">
+            <div style="font-family: Roboto, sans-serif; padding: 4px; min-width: 190px;">
                 <span style="display:inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; color: white; background-color: ${iconColor}; margin-bottom: 6px;">
-                    ${isFound ? 'HALLADO EN CUSTODIA' : 'BUSCADO POR ESTUDIANTE'}
+                    ${statusBadge}
                 </span>
                 <h4 style="margin: 0 0 4px 0; color: #1e3a8a; font-size: 14px;">${item.title}</h4>
                 <p style="margin: 0; font-size: 12px; color: #475569;">📍 ${item.location}</p>
                 <p style="margin: 2px 0; font-size: 11px; color: #64748b;">Categoría: ${item.category}</p>
                 ${item.desc ? `<p style="margin: 4px 0; font-size: 11px; color: #334155; font-style: italic;">"${item.desc}"</p>` : ''}
                 <p style="margin: 4px 0 8px 0; font-size: 10px; color: #94a3b8;">Por: ${item.userName} (${item.date})</p>
-                <button onclick="reclamarObjeto(${item.id})" style="width: 100%; background: #1e3a8a; color: white; border: none; padding: 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; transition: background 0.2s;">
-                    ✅ Reclamar / Retirar de Mapa
-                </button>
+                ${actionButtonHTML}
             </div>
         `;
 
@@ -217,16 +242,74 @@ document.addEventListener('DOMContentLoaded', () => {
         markersMap.set(item.id, marker);
     }
 
-    // Función de Reclamación accesible globalmente
-    window.reclamarObjeto = function(id) {
-        if (confirm("¿Confirmas que este objeto ha sido devuelto/reclamado? Se retirará permanentemente del mapa.")) {
-            reports = reports.map(r => r.id === id ? { ...r, status: 'claimed' } : r);
+    // --- PROCESO DE VALIDACIÓN DE SEGURIDAD (PASOS 1 Y 2) ---
+    window.solicitarReclamo = function(id) {
+        const item = reports.find(r => r.id === id);
+        if (!item) return;
+
+        if (claimReportId) claimReportId.value = item.id;
+        if (claimItemName) claimItemName.textContent = `Objeto: ${item.title}`;
+        if (claimQuestionText) claimQuestionText.textContent = item.question || "¿Qué característica única tiene el objeto?";
+        
+        if (modalClaim) modalClaim.classList.remove('hidden');
+    };
+
+    if (closeClaimModal && modalClaim) {
+        closeClaimModal.addEventListener('click', () => modalClaim.classList.add('hidden'));
+    }
+
+    if (formClaimItem) {
+        formClaimItem.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const id = parseInt(claimReportId.value);
+            const userAns = document.getElementById('claim-user-answer').value.trim();
+            const userContact = document.getElementById('claim-user-contact').value.trim();
+
+            const item = reports.find(r => r.id === id);
+            if (!item) return;
+
+            // Comparar respuesta (ignora mayúsculas/minúsculas)
+            if (userAns.toLowerCase() === (item.answer || '').toLowerCase()) {
+                // Generar PIN aleatorio de 4 dígitos
+                const pinGenerado = Math.floor(1000 + Math.random() * 9000).toString();
+
+                item.status = 'verifying';
+                item.pin = pinGenerado;
+                item.claimContact = userContact;
+                guardarReportes();
+
+                modalClaim.classList.add('hidden');
+                formClaimItem.reset();
+                actualizarMapaYContadores();
+
+                alert(`¡RESPUESTA CORRECTA! 🟢\n\nSe ha generado tu Código PIN de entrega: [ ${pinGenerado} ]\n\nEl objeto ha cambiado a estado "EN VERIFICACIÓN 🟠" en el plano. Presenta este PIN al momento de la entrega física para retirar el pin.`);
+            } else {
+                alert("❌ Respuesta incorrecta. Por motivos de seguridad, la respuesta no coincide con el registro del publicador.");
+            }
+        });
+    }
+
+    // --- PROCESO DE ENTREGA FINAL POR PIN (PASO 3) ---
+    window.confirmarEntregaPin = function(id) {
+        const item = reports.find(r => r.id === id);
+        if (!item) return;
+
+        const pinIngresado = prompt(`Confirmar Devolución para: "${item.title}"\n\nIngresa el Código PIN de 4 dígitos proporcionado al reclamante:`);
+
+        if (pinIngresado === null) return; // Cancelado
+
+        if (pinIngresado.trim() === item.pin) {
+            item.status = 'claimed';
             guardarReportes();
             actualizarMapaYContadores();
+            alert("¡ENTREGA CONFIRMADA EXITOSAMENTE! 🎉\n\nEl reporte ha sido cerrado y retirado del plano digital.");
+        } else {
+            alert("❌ Código PIN incorrecto. No se puede retirar el objeto del mapa.");
         }
     };
 
-    // --- MODALES Y CAPTURA DE UBICACIÓN EN EL MAPA ---
+    // Modales y Picker
     function abrirModalFormulario(tipo) {
         if (itemTypeVal) itemTypeVal.value = tipo;
         if (modalReportTitle) {
@@ -253,13 +336,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 category: document.getElementById('item-category').value,
                 location: document.getElementById('item-location').value.trim(),
                 desc: document.getElementById('item-desc').value.trim(),
+                question: document.getElementById('item-question').value.trim(),
+                answer: document.getElementById('item-answer').value.trim(),
                 type: itemTypeVal.value
             };
 
             modalReport.classList.add('hidden');
             formReportItem.reset();
-
-            // Activar modo picker sobre el plano de AutoCAD
             activarModoPicker();
         });
     }
@@ -279,7 +362,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (cancelPickerBtn) cancelPickerBtn.addEventListener('click', desactivarModoPicker);
 
-    // --- FILTROS DE MAPA ---
+    // Filtros
     filterChips.forEach(chip => {
         chip.addEventListener('click', (e) => {
             filterChips.forEach(c => c.classList.remove('active'));
@@ -289,7 +372,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // --- CERRAR SESIÓN ---
+    // Logout
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
             localStorage.removeItem('ubi_session');
