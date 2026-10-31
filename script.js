@@ -1,9 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Elementos DOM
+    // Elementos DOM de acceso y pantalla de carga
     const loginForm = document.getElementById('login-form');
     const btnLoginSubmit = document.getElementById('btn-login-submit');
     const loginContainer = document.getElementById('login-container');
     const appContainer = document.getElementById('app-container');
+    const loadingOverlay = document.getElementById('loading-overlay');
     const logoutBtn = document.getElementById('logout-btn');
 
     // Modales y Reportes
@@ -17,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const mapPickerBanner = document.getElementById('map-picker-banner');
     const cancelPickerBtn = document.getElementById('cancel-picker-btn');
 
-    // Reclamo
+    // Modal de Reclamo
     const modalClaim = document.getElementById('modal-claim');
     const closeClaimModal = document.getElementById('close-claim-modal');
     const formClaimItem = document.getElementById('form-claim-item');
@@ -31,11 +32,15 @@ document.addEventListener('DOMContentLoaded', () => {
     let isPickingLocation = false;
     let pendingReportData = null;
     let currentFilter = 'all';
+
+    // Dimensiones virtuales del plano de AutoCAD
     const bounds = [[0, 0], [1000, 1800]];
 
+    // Almacenamiento local
     let reports = JSON.parse(localStorage.getItem('ubi_reports')) || [];
     let currentUser = JSON.parse(localStorage.getItem('ubi_session')) || null;
 
+    // Persistencia de sesión al recargar
     if (currentUser) {
         cargarPerfilUI(currentUser);
         loginContainer.classList.add('hidden');
@@ -43,50 +48,81 @@ document.addEventListener('DOMContentLoaded', () => {
         initMap();
     }
 
+    // Procesar Inicio de Sesión con animación de Carga
     function procesarAcceso() {
-        const nombreVal = document.getElementById('nombre').value.trim();
-        const apellidosVal = document.getElementById('apellidos').value.trim();
-        const codigoVal = document.getElementById('codigo').value.trim();
+        const nombreVal = (document.getElementById('nombre')?.value || '').trim();
+        const apellidosVal = (document.getElementById('apellidos')?.value || '').trim();
+        const codigoVal = (document.getElementById('codigo')?.value || '').trim();
 
         if (!nombreVal || !apellidosVal || !codigoVal) {
-            alert("Completa todos los campos.");
+            alert("Por favor, completa todos los campos del formulario.");
             return;
         }
 
         currentUser = { nombre: nombreVal, apellidos: apellidosVal, codigo: codigoVal };
         localStorage.setItem('ubi_session', JSON.stringify(currentUser));
-        
-        cargarPerfilUI(currentUser);
-        loginContainer.classList.add('hidden');
-        appContainer.classList.remove('hidden');
-        initMap();
+
+        // Mostrar overlay de carga
+        if (loadingOverlay) loadingOverlay.classList.remove('hidden');
+
+        // Simulación de carga fluida (800ms)
+        setTimeout(() => {
+            cargarPerfilUI(currentUser);
+            if (loadingOverlay) loadingOverlay.classList.add('hidden');
+            if (loginContainer) loginContainer.classList.add('hidden');
+            if (appContainer) appContainer.classList.remove('hidden');
+            initMap();
+        }, 800);
     }
 
     function cargarPerfilUI(user) {
+        const init1 = user.nombre.charAt(0) || 'U';
+        const init2 = user.apellidos.charAt(0) || 'C';
+
         document.getElementById('display-name').textContent = `${user.nombre} ${user.apellidos}`;
         document.getElementById('display-code').textContent = `Cód: ${user.codigo}`;
         document.getElementById('welcome-message').textContent = `¡Hola, ${user.nombre}! 👋`;
-        document.getElementById('profile-avatar').textContent = (user.nombre.charAt(0) + user.apellidos.charAt(0)).toUpperCase();
+        document.getElementById('profile-avatar').textContent = (init1 + init2).toUpperCase();
     }
 
     if (btnLoginSubmit) btnLoginSubmit.addEventListener('click', procesarAcceso);
-    if (loginForm) loginForm.addEventListener('submit', (e) => { e.preventDefault(); procesarAcceso(); });
+    if (loginForm) {
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            procesarAcceso();
+        });
+    }
 
+    // Inicialización del Mapa con límites rígidos de AutoCAD
     function initMap() {
-        if (map) { actualizarMapaYContadores(); return; }
+        if (map) {
+            actualizarMapaYContadores();
+            return;
+        }
 
-        map = L.map('map', { crs: L.CRS.Simple, maxBounds: bounds, maxBoundsViscosity: 1.0, attributionControl: false });
+        map = L.map('map', {
+            crs: L.CRS.Simple,
+            maxBounds: bounds,
+            maxBoundsViscosity: 1.0,
+            attributionControl: false
+        });
+
         L.imageOverlay('plano-ucv.jpg', bounds).addTo(map);
 
         map.on('click', (e) => {
             if (!isPickingLocation || !pendingReportData) return;
-            
+
             const newReport = {
                 id: Date.now(),
                 ...pendingReportData,
-                lat: Math.round(e.latlng.lat), lng: Math.round(e.latlng.lng),
-                status: 'active', pin: null, claimContact: null, claimAnswer: null,
-                userCode: currentUser.codigo, userName: `${currentUser.nombre} ${currentUser.apellidos}`,
+                lat: Math.round(e.latlng.lat),
+                lng: Math.round(e.latlng.lng),
+                status: 'active',
+                pin: null,
+                claimContact: null,
+                claimAnswer: null,
+                userCode: currentUser.codigo,
+                userName: `${currentUser.nombre} ${currentUser.apellidos}`,
                 date: new Date().toLocaleDateString('es-PE', { hour: '2-digit', minute: '2-digit' })
             };
 
@@ -94,13 +130,28 @@ document.addEventListener('DOMContentLoaded', () => {
             guardarReportes();
             desactivarModoPicker();
             actualizarMapaYContadores();
-            alert('¡Reporte publicado en el mapa!');
+            alert('¡Reporte publicado con éxito en el plano digital!');
         });
 
-        setTimeout(() => { map.fitBounds(bounds); map.setMinZoom(map.getBoundsZoom(bounds)); actualizarMapaYContadores(); }, 300);
+        setTimeout(() => {
+            if (map) {
+                map.invalidateSize();
+                map.fitBounds(bounds);
+                try {
+                    const minZoomCalc = map.getBoundsZoom(bounds);
+                    map.setMinZoom(minZoomCalc);
+                    map.setMaxZoom(minZoomCalc + 3);
+                } catch (err) {
+                    map.setMinZoom(0);
+                }
+            }
+            actualizarMapaYContadores();
+        }, 300);
     }
 
-    function guardarReportes() { localStorage.setItem('ubi_reports', JSON.stringify(reports)); }
+    function guardarReportes() {
+        localStorage.setItem('ubi_reports', JSON.stringify(reports));
+    }
 
     function actualizarMapaYContadores() {
         if (!map) return;
@@ -109,6 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const activeReports = reports.filter(r => r.status !== 'claimed');
         let filtered = activeReports;
+
         if (currentFilter === 'lost' || currentFilter === 'found') {
             filtered = activeReports.filter(r => r.type === currentFilter && r.status === 'active');
         } else if (currentFilter === 'verifying') {
@@ -116,8 +168,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         filtered.forEach(item => addMarkerToMap(item));
-        document.getElementById('count-lost').textContent = activeReports.filter(r => r.type === 'lost' && r.status === 'active').length;
-        document.getElementById('count-found').textContent = activeReports.filter(r => r.type === 'found' && r.status === 'active').length;
+
+        const countLostNum = activeReports.filter(r => r.type === 'lost' && r.status === 'active').length;
+        const countFoundNum = activeReports.filter(r => r.type === 'found' && r.status === 'active').length;
+
+        document.getElementById('count-lost').textContent = countLostNum;
+        document.getElementById('count-found').textContent = countFoundNum;
     }
 
     function addMarkerToMap(item) {
@@ -142,7 +198,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (item.status === 'verifying') {
             if (isOwner) {
-                // Interfaz para el que reportó (Aprobar / Rechazar)
                 actionButtonHTML = `
                     <div style="background: #fff7ed; padding: 8px; border-radius: 6px; margin-bottom: 8px; border: 1px solid #fdba74;">
                         <p style="font-size: 11px; font-weight: bold; color: #c2410c; margin-bottom:2px;">Respuesta recibida:</p>
@@ -173,7 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         🔒 Solicitar Reclamo
                     </button>`;
             } else {
-                actionButtonHTML = `<p style="font-size:10px; color: #64748b; text-align:center; font-style:italic;">Tú publicaste esto.</p>`;
+                actionButtonHTML = `<p style="font-size:10px; color: #64748b; text-align:center; font-style:italic;">Tú publicaste este reporte.</p>`;
             }
         }
 
@@ -189,7 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
         markersMap.set(item.id, marker);
     }
 
-    // FLUJO DE VERIFICACIÓN HUMANA
+    // Flujo de Verificación Humana
     window.solicitarReclamo = function(id) {
         const item = reports.find(r => r.id === id);
         if (!item) return;
@@ -201,44 +256,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (closeClaimModal) closeClaimModal.addEventListener('click', () => modalClaim.classList.add('hidden'));
 
-    if (formClaimItem) formClaimItem.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const item = reports.find(r => r.id === parseInt(claimReportId.value));
-        if (!item) return;
+    if (formClaimItem) {
+        formClaimItem.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const item = reports.find(r => r.id === parseInt(claimReportId.value));
+            if (!item) return;
 
-        item.status = 'verifying';
-        item.claimAnswer = document.getElementById('claim-user-answer').value.trim();
-        item.claimContact = document.getElementById('claim-user-contact').value.trim();
-        guardarReportes();
+            item.status = 'verifying';
+            item.claimAnswer = document.getElementById('claim-user-answer').value.trim();
+            item.claimContact = document.getElementById('claim-user-contact').value.trim();
+            guardarReportes();
 
-        modalClaim.classList.add('hidden');
-        formClaimItem.reset();
-        actualizarMapaYContadores();
-        alert("✉️ Tu respuesta ha sido enviada.\nEl estudiante que encontró el objeto la revisará y te contactará por WhatsApp si es correcta.");
-    });
+            modalClaim.classList.add('hidden');
+            formClaimItem.reset();
+            actualizarMapaYContadores();
+            alert("✉️ Tu respuesta ha sido enviada.\nEl estudiante que encontró el objeto la revisará y te contactará por WhatsApp si es correcta.");
+        });
+    }
 
     window.aprobarReclamo = function(id) {
         const item = reports.find(r => r.id === id);
         if (!item) return;
-        
+
         const pinGenerado = Math.floor(1000 + Math.random() * 9000).toString();
         item.status = 'approved';
         item.pin = pinGenerado;
         guardarReportes();
         actualizarMapaYContadores();
-        alert(`✅ Reclamo Aprobado.\n\nEl sistema ha generado el PIN: [ ${pinGenerado} ]\n\nPor favor, escribe un WhatsApp al número ${item.claimContact} indicándole que aprobaste su respuesta y entrégale este PIN para que te lo diga cuando se encuentren físicamente.`);
+        alert(`✅ Reclamo Aprobado.\n\nEl sistema ha generado el PIN: [ ${pinGenerado} ]\n\nContacta al número ${item.claimContact} indicándole que aprobaste su respuesta y entrégale este PIN para solicitarlo al momento del encuentro físico.`);
     };
 
     window.rechazarReclamo = function(id) {
         const item = reports.find(r => r.id === id);
         if (!item) return;
-        
+
         item.status = 'active';
         item.claimAnswer = null;
         item.claimContact = null;
         guardarReportes();
         actualizarMapaYContadores();
-        alert("❌ Reclamo rechazado. El objeto vuelve a estar disponible para la comunidad.");
+        alert("❌ Reclamo rechazado. El objeto vuelve a estar activo en el plano.");
     };
 
     window.confirmarEntregaPin = function(id) {
@@ -251,13 +308,13 @@ document.addEventListener('DOMContentLoaded', () => {
             item.status = 'claimed';
             guardarReportes();
             actualizarMapaYContadores();
-            alert("¡ENTREGA CONFIRMADA EXITOSAMENTE! 🎉\nEl reporte ha sido cerrado.");
+            alert("¡ENTREGA CONFIRMADA EXITOSAMENTE! 🎉\nEl reporte ha sido retirado.");
         } else {
             alert("❌ PIN incorrecto.");
         }
     };
 
-    // Control de Formularios y Filtros
+    // Control de Formularios y Modales
     function abrirModalFormulario(tipo) {
         itemTypeVal.value = tipo;
         modalReportTitle.textContent = tipo === 'found' ? 'Reportar Objeto Encontrado 🟢' : 'Reportar Objeto Perdido 🔴';
@@ -268,20 +325,22 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnOpenReportLost) btnOpenReportLost.addEventListener('click', () => abrirModalFormulario('lost'));
     if (closeReportModal) closeReportModal.addEventListener('click', () => modalReport.classList.add('hidden'));
 
-    if (formReportItem) formReportItem.addEventListener('submit', (e) => {
-        e.preventDefault();
-        pendingReportData = {
-            title: document.getElementById('item-title').value.trim(),
-            category: document.getElementById('item-category').value,
-            location: document.getElementById('item-location').value.trim(),
-            desc: document.getElementById('item-desc').value.trim(),
-            question: document.getElementById('item-question').value.trim(),
-            type: itemTypeVal.value
-        };
-        modalReport.classList.add('hidden');
-        formReportItem.reset();
-        activarModoPicker();
-    });
+    if (formReportItem) {
+        formReportItem.addEventListener('submit', (e) => {
+            e.preventDefault();
+            pendingReportData = {
+                title: document.getElementById('item-title').value.trim(),
+                category: document.getElementById('item-category').value,
+                location: document.getElementById('item-location').value.trim(),
+                desc: document.getElementById('item-desc').value.trim(),
+                question: document.getElementById('item-question').value.trim(),
+                type: itemTypeVal.value
+            };
+            modalReport.classList.add('hidden');
+            formReportItem.reset();
+            activarModoPicker();
+        });
+    }
 
     function activarModoPicker() {
         isPickingLocation = true;
@@ -295,6 +354,7 @@ document.addEventListener('DOMContentLoaded', () => {
         mapPickerBanner.classList.add('hidden');
         map.getContainer().style.cursor = '';
     }
+
     if (cancelPickerBtn) cancelPickerBtn.addEventListener('click', desactivarModoPicker);
 
     filterChips.forEach(chip => chip.addEventListener('click', (e) => {
@@ -304,10 +364,12 @@ document.addEventListener('DOMContentLoaded', () => {
         actualizarMapaYContadores();
     }));
 
-    if (logoutBtn) logoutBtn.addEventListener('click', () => {
-        localStorage.removeItem('ubi_session');
-        currentUser = null;
-        appContainer.classList.add('hidden');
-        loginContainer.classList.remove('hidden');
-    });
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('ubi_session');
+            currentUser = null;
+            appContainer.classList.add('hidden');
+            loginContainer.classList.remove('hidden');
+        });
+    }
 });
