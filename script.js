@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 2000);
     });
 
-  // Función para Cargar el Plano Interactivo de AutoCAD
+ // Función para Cargar el Plano Interactivo de AutoCAD
     function initMap() {
         if (map) return; // Si ya fue creado, no duplicar
 
