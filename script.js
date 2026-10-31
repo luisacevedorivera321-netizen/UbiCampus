@@ -1,3 +1,21 @@
+// Inicialización de Firebase
+const firebaseConfig = {
+    apiKey: "AIzaSyBjIhSawNRtFP89wJdyqN2klRUOc1ovSOk",
+    authDomain: "ubicampus-53d05.firebaseapp.com",
+    databaseURL: "https://ubicampus-53d05-default-rtdb.firebaseio.com",
+    projectId: "ubicampus-53d05",
+    storageBucket: "ubicampus-53d05.firebasestorage.app",
+    messagingSenderId: "1080685186655",
+    appId: "1:1080685186655:web:314f1368af0335928895ea",
+    measurementId: "G-ZJR3KCNBQ2"
+};
+
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.database();
+const reportsRef = db.ref('reports');
+
 document.addEventListener('DOMContentLoaded', () => {
     // Elementos DOM de acceso y pantalla de carga
     const loginForm = document.getElementById('login-form');
@@ -36,9 +54,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // Dimensiones virtuales del plano de AutoCAD
     const bounds = [[0, 0], [1000, 1800]];
 
-    // Almacenamiento local
-    let reports = JSON.parse(localStorage.getItem('ubi_reports')) || [];
+    // Almacenamiento local (Sesión de usuario) y estado global de reportes
+    let reports = [];
     let currentUser = JSON.parse(localStorage.getItem('ubi_session')) || null;
+
+    // Escuchador en tiempo real de Firebase para sincronizar reportes
+    reportsRef.on('value', (snapshot) => {
+        const data = snapshot.val();
+        reports = [];
+        if (data) {
+            Object.keys(data).forEach(key => {
+                reports.push(data[key]);
+            });
+        }
+        actualizarMapaYContadores();
+    });
 
     // Persistencia de sesión al recargar
     if (currentUser) {
@@ -112,8 +142,9 @@ document.addEventListener('DOMContentLoaded', () => {
         map.on('click', (e) => {
             if (!isPickingLocation || !pendingReportData) return;
 
+            const reportId = Date.now();
             const newReport = {
-                id: Date.now(),
+                id: reportId,
                 ...pendingReportData,
                 lat: Math.round(e.latlng.lat),
                 lng: Math.round(e.latlng.lng),
@@ -126,11 +157,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 date: new Date().toLocaleDateString('es-PE', { hour: '2-digit', minute: '2-digit' })
             };
 
-            reports.push(newReport);
-            guardarReportes();
+            // Guardar directamente en Firebase Realtime Database
+            reportsRef.child(reportId).set(newReport);
+
             desactivarModoPicker();
-            actualizarMapaYContadores();
-            alert('¡Reporte publicado con éxito en el plano digital!');
+            alert('¡Reporte publicado con éxito en la nube!');
         });
 
         setTimeout(() => {
@@ -147,10 +178,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             actualizarMapaYContadores();
         }, 300);
-    }
-
-    function guardarReportes() {
-        localStorage.setItem('ubi_reports', JSON.stringify(reports));
     }
 
     function actualizarMapaYContadores() {
@@ -194,7 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }).addTo(map);
 
         let actionButtonHTML = '';
-        const isOwner = currentUser.codigo === item.userCode;
+        const isOwner = currentUser && currentUser.codigo === item.userCode;
 
         if (item.status === 'verifying') {
             if (isOwner) {
@@ -244,7 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
         markersMap.set(item.id, marker);
     }
 
-    // Flujo de Verificación Humana
+    // Flujo de Verificación Humana con Firebase
     window.solicitarReclamo = function(id) {
         const item = reports.find(r => r.id === id);
         if (!item) return;
@@ -259,55 +286,55 @@ document.addEventListener('DOMContentLoaded', () => {
     if (formClaimItem) {
         formClaimItem.addEventListener('submit', (e) => {
             e.preventDefault();
-            const item = reports.find(r => r.id === parseInt(claimReportId.value));
-            if (!item) return;
+            const reportId = parseInt(claimReportId.value);
+            const answerVal = document.getElementById('claim-user-answer').value.trim();
+            const contactVal = document.getElementById('claim-user-contact').value.trim();
 
-            item.status = 'verifying';
-            item.claimAnswer = document.getElementById('claim-user-answer').value.trim();
-            item.claimContact = document.getElementById('claim-user-contact').value.trim();
-            guardarReportes();
+            reportsRef.child(reportId).update({
+                status: 'verifying',
+                claimAnswer: answerVal,
+                claimContact: contactVal
+            });
 
             modalClaim.classList.add('hidden');
             formClaimItem.reset();
-            actualizarMapaYContadores();
             alert("✉️ Tu respuesta ha sido enviada.\nEl estudiante que encontró el objeto la revisará y te contactará por WhatsApp si es correcta.");
         });
     }
 
     window.aprobarReclamo = function(id) {
-        const item = reports.find(r => r.id === id);
-        if (!item) return;
-
         const pinGenerado = Math.floor(1000 + Math.random() * 9000).toString();
-        item.status = 'approved';
-        item.pin = pinGenerado;
-        guardarReportes();
-        actualizarMapaYContadores();
-        alert(`✅ Reclamo Aprobado.\n\nEl sistema ha generado el PIN: [ ${pinGenerado} ]\n\nContacta al número ${item.claimContact} indicándole que aprobaste su respuesta y entrégale este PIN para solicitarlo al momento del encuentro físico.`);
+        const item = reports.find(r => r.id === id);
+
+        reportsRef.child(id).update({
+            status: 'approved',
+            pin: pinGenerado
+        });
+
+        alert(`✅ Reclamo Aprobado.\n\nEl sistema ha generado el PIN: [ ${pinGenerado} ]\n\nContacta al número ${item?.claimContact || ''} indicándole que aprobaste su respuesta y entrégale este PIN para solicitarlo al momento del encuentro físico.`);
     };
 
     window.rechazarReclamo = function(id) {
-        const item = reports.find(r => r.id === id);
-        if (!item) return;
+        reportsRef.child(id).update({
+            status: 'active',
+            claimAnswer: null,
+            claimContact: null
+        });
 
-        item.status = 'active';
-        item.claimAnswer = null;
-        item.claimContact = null;
-        guardarReportes();
-        actualizarMapaYContadores();
         alert("❌ Reclamo rechazado. El objeto vuelve a estar activo en el plano.");
     };
 
     window.confirmarEntregaPin = function(id) {
         const item = reports.find(r => r.id === id);
         if (!item) return;
+
         const pinIngresado = prompt(`Ingresa el PIN de 4 dígitos proporcionado por el dueño al momento de la entrega:`);
         if (pinIngresado === null) return;
 
         if (pinIngresado.trim() === item.pin) {
-            item.status = 'claimed';
-            guardarReportes();
-            actualizarMapaYContadores();
+            reportsRef.child(id).update({
+                status: 'claimed'
+            });
             alert("¡ENTREGA CONFIRMADA EXITOSAMENTE! 🎉\nEl reporte ha sido retirado.");
         } else {
             alert("❌ PIN incorrecto.");
