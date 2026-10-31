@@ -37,64 +37,61 @@ document.addEventListener('DOMContentLoaded', () => {
         loginForm.addEventListener('submit', (evento) => {
             evento.preventDefault();
 
-            const nombre = document.getElementById('nombre').value.trim();
-            const apellidos = document.getElementById('apellidos').value.trim();
-            const codigo = document.getElementById('codigo').value.trim();
+            const nombreInput = document.getElementById('nombre');
+            const apellidosInput = document.getElementById('apellidos');
+            const codigoInput = document.getElementById('codigo');
 
-            loadingOverlay.classList.remove('hidden');
+            const nombre = nombreInput ? nombreInput.value.trim() : 'Estudiante';
+            const apellidos = apellidosInput ? apellidosInput.value.trim() : '';
+            const codigo = codigoInput ? codigoInput.value.trim() : '00000000';
+
+            if (loadingOverlay) loadingOverlay.classList.remove('hidden');
 
             setTimeout(() => {
                 const iniciales = (nombre.charAt(0) || 'U') + (apellidos.charAt(0) || 'C');
 
-                displayName.textContent = `${nombre} ${apellidos}`;
-                displayCode.textContent = `Cód: ${codigo}`;
-                welcomeMessage.textContent = `¡Hola, ${nombre}! 👋`;
-                profileAvatar.textContent = iniciales.toUpperCase();
+                if (displayName) displayName.textContent = `${nombre} ${apellidos}`;
+                if (displayCode) displayCode.textContent = `Cód: ${codigo}`;
+                if (welcomeMessage) welcomeMessage.textContent = `¡Hola, ${nombre}! 👋`;
+                if (profileAvatar) profileAvatar.textContent = iniciales.toUpperCase();
 
-                loadingOverlay.classList.add('hidden');
-                loginContainer.classList.add('hidden');
-                appContainer.classList.remove('hidden');
+                if (loadingOverlay) loadingOverlay.classList.add('hidden');
+                if (loginContainer) loginContainer.classList.add('hidden');
+                if (appContainer) appContainer.classList.remove('hidden');
 
-                // Inicializar mapa cuando la pantalla principal ya es visible
                 initMap();
             }, 1000);
         });
     }
 
-    // Función para Cargar el Plano Interactivo con Paredes Rígidas
+    // Función para Cargar el Plano Interactivo
     function initMap() {
         if (map) return;
 
-        // Dimensiones del plano [Alto, Ancho]
         const bounds = [[0, 0], [1000, 1800]];
 
-        // Instancia del mapa
         map = L.map('map', {
             crs: L.CRS.Simple,
             maxBounds: bounds,
-            maxBoundsViscosity: 1.0, // Impide arrastrar fuera de la imagen
+            maxBoundsViscosity: 1.0,
             attributionControl: false
         });
 
-        // Montar la imagen de AutoCAD
         L.imageOverlay('plano-ucv.jpg', bounds).addTo(map);
 
-        // Cargar marcadores iniciales
         renderMarkers('all');
 
-        // Ajustar tamaño de pantalla y fijar zoom mínimo estricto
         setTimeout(() => {
             map.invalidateSize();
             map.fitBounds(bounds);
 
-            // Bloquear zoom mínimo para impedir ver espacio vacío exterior
             const minZoomCalc = map.getBoundsZoom(bounds);
             map.setMinZoom(minZoomCalc);
             map.setMaxZoom(minZoomCalc + 3);
         }, 250);
     }
 
-    // Renderizar Marcadores con soporte para Filtros
+    // Renderizar Marcadores
     function renderMarkers(filterType) {
         markers.forEach(m => map.removeLayer(m));
         markers = [];
@@ -135,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
         markers.push(marker);
     }
 
-    // Lógica para botones de Filtro (Todos, Perdidos, Encontrados)
+    // Filtros
     filterChips.forEach(chip => {
         chip.addEventListener('click', (e) => {
             filterChips.forEach(c => c.classList.remove('active'));
@@ -145,7 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Control de Modales
+    // Modales
     if (btnOpenReport && modalReport) {
         btnOpenReport.addEventListener('click', () => modalReport.classList.remove('hidden'));
     }
@@ -153,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
         closeReportModal.addEventListener('click', () => modalReport.classList.add('hidden'));
     }
 
-    // Publicar Objeto desde el Formulario
+    // Formulario de Reporte
     if (formReportItem) {
         formReportItem.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -175,7 +172,6 @@ document.addEventListener('DOMContentLoaded', () => {
             initialItems.push(newItem);
             addMarkerToMap(newItem);
 
-            // Actualizar número en la tarjeta de encontrados
             const foundCount = document.getElementById('count-found');
             if (foundCount) {
                 foundCount.textContent = parseInt(foundCount.textContent || 0) + 1;
