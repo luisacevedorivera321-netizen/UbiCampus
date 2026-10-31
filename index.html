@@ -27,7 +27,7 @@
         <button id="cancel-picker-btn" class="btn-cancel-picker">Cancelar</button>
     </div>
 
-    <!-- PANTALLA DE ACCESO -->
+    <!-- 1. PANTALLA DE ACCESO (RESTAURADA CON ÍCONOS SVG) -->
     <div id="login-container">
         <div class="login-image"></div>
         <div class="login-form-section">
@@ -38,41 +38,51 @@
                         <h2 class="brand-title">UbiCampus</h2>
                     </div>
                     <h3 class="login-subtitle-main">Iniciar sesión</h3>
-                    <p class="login-subtitle-desc">Acceso al sistema de recuperación institucional.</p>
+                    <p class="login-subtitle-desc">Bienvenido de nuevo. Ingrese sus credenciales para continuar.</p>
                 </div>
 
                 <form id="login-form" onsubmit="return false;">
                     <div class="input-group">
                         <div class="input-wrapper">
-                            <span class="field-icon">👤</span>
+                            <span class="field-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                            </span>
                             <span class="field-divider"></span>
-                            <input type="text" id="nombre" required placeholder="Nombres*" pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+">
+                            <input type="text" id="nombre" required placeholder="Nombres*" pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+" title="Ingresa solo letras y espacios">
                         </div>
                     </div>
 
                     <div class="input-group">
                         <div class="input-wrapper">
-                            <span class="field-icon">👤</span>
+                            <span class="field-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-3-3.87"></path><path d="M7 23v-2a4 4 0 0 1 3-3.87"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path></svg>
+                            </span>
                             <span class="field-divider"></span>
-                            <input type="text" id="apellidos" required placeholder="Apellidos*" pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+">
+                            <input type="text" id="apellidos" required placeholder="Apellidos*" pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+" title="Ingresa solo letras y espacios">
                         </div>
                     </div>
 
                     <div class="input-group">
                         <div class="input-wrapper">
-                            <span class="field-icon">🆔</span>
+                            <span class="field-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><line x1="7" y1="8" x2="17" y2="8"></line><line x1="7" y1="12" x2="13" y2="12"></line><line x1="7" y1="16" x2="10" y2="16"></line></svg>
+                            </span>
                             <span class="field-divider"></span>
-                            <input type="text" id="codigo" required placeholder="Código de Estudiante*" pattern="[0-9]+">
+                            <input type="text" id="codigo" required placeholder="Código de Estudiante*" pattern="[0-9]+" title="Ingresa solo números">
                         </div>
                     </div>
 
                     <button type="button" id="btn-login-submit" class="btn-primary">Ingresar al Sistema</button>
                 </form>
+
+                <div class="login-footer">
+                    <p>Acceso exclusivo para la comunidad universitaria</p>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- PANTALLA PRINCIPAL -->
+    <!-- 2. PANTALLA PRINCIPAL -->
     <div id="app-container" class="hidden">
         <nav class="navbar">
             <div class="nav-brand-container">
@@ -122,11 +132,20 @@
                         <button class="filter-chip" data-filter="verifying">🟠 En Verificación</button>
                     </div>
                 </div>
+
+                <div class="map-legend">
+                    <h4>Leyenda de Marcadores</h4>
+                    <ul>
+                        <li><span class="dot red"></span> Objeto Buscado por Estudiante</li>
+                        <li><span class="dot green"></span> Objeto Hallado en Custodia</li>
+                        <li><span class="dot orange"></span> Proceso de Devolución Activo</li>
+                    </ul>
+                </div>
             </aside>
 
             <main class="map-container-wrapper">
                 <div class="map-header">
-                    <h3>🗺️ Plano Digital Interactivo</h3>
+                    <h3>🗺️ Plano Digital Interactivo - UbiCampus</h3>
                     <span class="live-indicator"><span class="blink-dot"></span> Sistema Activo</span>
                 </div>
                 <div id="map"></div>
@@ -145,35 +164,35 @@
                 <input type="hidden" id="item-type-val" value="found">
                 
                 <div class="input-group">
-                    <label>Objeto / Artículo*</label>
+                    <label for="item-title">Objeto / Artículo*</label>
                     <input type="text" id="item-title" required placeholder="Ej. Billetera de cuero">
                 </div>
                 
                 <div class="input-group">
-                    <label>Categoría*</label>
+                    <label for="item-category">Categoría*</label>
                     <select id="item-category" required>
                         <option value="Documentos / DNI">Documentos / DNI</option>
                         <option value="Celulares / Laptops">Celulares / Laptops</option>
                         <option value="Llaves / Billeteras">Llaves / Billeteras</option>
-                        <option value="Mochilas / Otros">Mochilas / Otros</option>
+                        <option value="Mochilas / Cuadernos">Mochilas / Cuadernos</option>
+                        <option value="Otros">Otros</option>
                     </select>
                 </div>
                 
                 <div class="input-group">
-                    <label>Referencia de Ubicación*</label>
+                    <label for="item-location">Referencia de Ubicación*</label>
                     <input type="text" id="item-location" required placeholder="Ej. Pabellón B - Piso 2">
                 </div>
                 
                 <div class="input-group">
-                    <label>Detalles Generales (Públicos)</label>
+                    <label for="item-desc">Detalles Generales (Públicos)</label>
                     <textarea id="item-desc" rows="2" placeholder="Marca, color exterior..."></textarea>
                 </div>
 
-                <!-- PREGUNTA (SIN RESPUESTA FIJA) -->
                 <div class="security-box">
                     <h4>🔒 Validación de Propiedad</h4>
                     <div class="input-group">
-                        <label>Pregunta para verificar al dueño*</label>
+                        <label for="item-question">Pregunta para verificar al dueño*</label>
                         <input type="text" id="item-question" required placeholder="Ej. ¿Qué foto de fondo de pantalla tiene?">
                         <p style="font-size: 11px; color:#64748b; margin-top:4px;">Tú revisarás la respuesta del solicitante antes de entregar el objeto.</p>
                     </div>
@@ -201,12 +220,12 @@
                 </div>
 
                 <div class="input-group" style="margin-top: 15px;">
-                    <label>Tu Respuesta*</label>
+                    <label for="claim-user-answer">Tu Respuesta*</label>
                     <input type="text" id="claim-user-answer" required placeholder="Describe el detalle oculto...">
                 </div>
 
                 <div class="input-group">
-                    <label>Teléfono / WhatsApp*</label>
+                    <label for="claim-user-contact">Teléfono / WhatsApp*</label>
                     <input type="text" id="claim-user-contact" required placeholder="Ej. 987654321">
                 </div>
 
