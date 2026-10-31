@@ -5,25 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UbiCampus - Sistema Institucional de Recuperación</title>
     <link rel="stylesheet" href="estilos.css">
-    <!-- Fuentes Google: Montserrat y Roboto -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- Leaflet CSS (Para el mapa interactivo) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body>
 
-    <!-- PANTALLA DE CARGA (Overlay Difuminado) -->
+    <!-- OVERLAY DE CARGA -->
     <div id="loading-overlay" class="loading-overlay hidden">
         <div class="loading-card">
             <div class="logo-pulse-container">
                 <img src="Logo.png" alt="Cargando..." class="loading-logo">
             </div>
             <div class="spinner"></div>
-            <p class="loading-text">Validando credenciales en UbiCampus...</p>
+            <p class="loading-text">Cargando UbiCampus...</p>
         </div>
     </div>
 
-    <!-- 1. PANTALLA DE ACCESO (Pantalla Dividida con cajas redondeadas e íconos) -->
+    <!-- BANNER DE INSTRUCCIÓN PARA SELECCIONAR UBICACIÓN EN EL MAPA -->
+    <div id="map-picker-banner" class="picker-banner hidden">
+        <span>📍 <strong>Haz clic en la zona exacta del plano</strong> donde se perdió o halló el objeto.</span>
+        <button id="cancel-picker-btn" class="btn-cancel-picker">Cancelar</button>
+    </div>
+
+    <!-- 1. PANTALLA DE ACCESO -->
     <div id="login-container">
         <div class="login-image"></div>
         <div class="login-form-section">
@@ -34,42 +38,42 @@
                         <h2 class="brand-title">UbiCampus</h2>
                     </div>
                     <h3 class="login-subtitle-main">Iniciar sesión</h3>
-                    <p class="login-subtitle-desc">Bienvenido de nuevo. Ingrese sus credenciales para continuar.</p>
+                    <p class="login-subtitle-desc">Acceso al sistema de recuperación institucional.</p>
                 </div>
 
-               <form id="login-form">
-    <div class="input-group">
-        <div class="input-wrapper">
-            <span class="field-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-            </span>
-            <span class="field-divider"></span>
-            <input type="text" id="nombre" required placeholder="Nombres*" pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+" title="Ingresa solo letras y espacios">
-        </div>
-    </div>
+                <form id="login-form" onsubmit="return false;">
+                    <div class="input-group">
+                        <div class="input-wrapper">
+                            <span class="field-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                            </span>
+                            <span class="field-divider"></span>
+                            <input type="text" id="nombre" required placeholder="Nombres*" pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+" title="Ingresa solo letras y espacios">
+                        </div>
+                    </div>
 
-    <div class="input-group">
-        <div class="input-wrapper">
-            <span class="field-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-3-3.87"></path><path d="M7 23v-2a4 4 0 0 1 3-3.87"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path></svg>
-            </span>
-            <span class="field-divider"></span>
-            <input type="text" id="apellidos" required placeholder="Apellidos*" pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+" title="Ingresa solo letras y espacios">
-        </div>
-    </div>
+                    <div class="input-group">
+                        <div class="input-wrapper">
+                            <span class="field-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-3-3.87"></path><path d="M7 23v-2a4 4 0 0 1 3-3.87"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path></svg>
+                            </span>
+                            <span class="field-divider"></span>
+                            <input type="text" id="apellidos" required placeholder="Apellidos*" pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+" title="Ingresa solo letras y espacios">
+                        </div>
+                    </div>
 
-    <div class="input-group">
-        <div class="input-wrapper">
-            <span class="field-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><line x1="7" y1="8" x2="17" y2="8"></line><line x1="7" y1="12" x2="13" y2="12"></line><line x1="7" y1="16" x2="10" y2="16"></line></svg>
-            </span>
-            <span class="field-divider"></span>
-            <input type="text" id="codigo" required placeholder="Código de Estudiante*" pattern="[0-9]+" title="Ingresa solo números">
-        </div>
-    </div>
+                    <div class="input-group">
+                        <div class="input-wrapper">
+                            <span class="field-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><line x1="7" y1="8" x2="17" y2="8"></line><line x1="7" y1="12" x2="13" y2="12"></line><line x1="7" y1="16" x2="10" y2="16"></line></svg>
+                            </span>
+                            <span class="field-divider"></span>
+                            <input type="text" id="codigo" required placeholder="Código de Estudiante*" pattern="[0-9]+" title="Ingresa solo números">
+                        </div>
+                    </div>
 
-    <button type="submit" class="btn-primary">Ingresar al Sistema</button>
-</form>
+                    <button type="button" id="btn-login-submit" class="btn-primary">Ingresar al Sistema</button>
+                </form>
 
                 <div class="login-footer">
                     <p>Acceso exclusivo para la comunidad universitaria</p>
@@ -78,7 +82,7 @@
         </div>
     </div>
 
-    <!-- 2. PANTALLA PRINCIPAL (DASHBOARD PROFESIONAL) -->
+    <!-- 2. PANTALLA PRINCIPAL -->
     <div id="app-container" class="hidden">
         <nav class="navbar">
             <div class="nav-brand-container">
@@ -103,23 +107,24 @@
                     <p>Plano interactivo en tiempo real</p>
                 </div>
 
+                <!-- CONTADORES DINÁMICOS QUE INICIAN EN 0 -->
                 <div class="stats-grid">
                     <div class="stat-card lost">
-                        <span class="stat-num" id="count-lost">3</span>
+                        <span class="stat-num" id="count-lost">0</span>
                         <span class="stat-label">Perdidos</span>
                     </div>
                     <div class="stat-card found">
-                        <span class="stat-num" id="count-found">5</span>
+                        <span class="stat-num" id="count-found">0</span>
                         <span class="stat-label">Encontrados</span>
                     </div>
                 </div>
 
                 <div class="action-panel">
-                    <button id="btn-open-report" class="btn-action report">
-                        <span>➕ Reportar Objeto Encontrado</span>
+                    <button id="btn-open-report-found" class="btn-action report">
+                        <span>🟢 Reportar Objeto Encontrado</span>
                     </button>
-                    <button id="btn-open-search" class="btn-action search">
-                        <span>🔍 Buscar Mi Objeto</span>
+                    <button id="btn-open-report-lost" class="btn-action search">
+                        <span>🔴 Reportar Objeto Perdido</span>
                     </button>
                 </div>
 
@@ -144,49 +149,54 @@
             <main class="map-container-wrapper">
                 <div class="map-header">
                     <h3>🗺️ Plano Digital Interactivo - UbiCampus</h3>
-                    <span class="live-indicator"><span class="blink-dot"></span> Actualizado en tiempo real</span>
+                    <span class="live-indicator"><span class="blink-dot"></span> Sistema Activo</span>
                 </div>
                 <div id="map"></div>
             </main>
         </div>
     </div>
 
-    <!-- MODAL FORMULARIO DE REPORTE DE OBJETO -->
+    <!-- MODAL DE REGISTRO DE OBJETO -->
     <div id="modal-report" class="modal-overlay hidden">
         <div class="modal-card">
             <div class="modal-header">
-                <h3>Reportar Objeto Encontrado</h3>
+                <h3 id="modal-report-title">Reportar Objeto</h3>
                 <button class="close-modal" id="close-report-modal">&times;</button>
             </div>
             <form id="form-report-item">
+                <input type="hidden" id="item-type-val" value="found">
+                
                 <div class="input-group">
-                    <label for="item-title">Nombre del Objeto</label>
-                    <input type="text" id="item-title" required placeholder="Ej. Mochila negra con cargador">
+                    <label for="item-title">Objeto / Artículo*</label>
+                    <input type="text" id="item-title" required placeholder="Ej. Billetera de cuero marrón / Mochila Lenovo">
                 </div>
+                
                 <div class="input-group">
-                    <label for="item-category">Categoría</label>
+                    <label for="item-category">Categoría*</label>
                     <select id="item-category" required>
                         <option value="Documentos / DNI">Documentos / DNI</option>
                         <option value="Celulares / Laptops">Celulares / Laptops</option>
                         <option value="Llaves / Billeteras">Llaves / Billeteras</option>
-                        <option value="Mochilas / Monedas">Mochilas / Cuadernos</option>
+                        <option value="Mochilas / Cuadernos">Mochilas / Cuadernos</option>
                         <option value="Otros">Otros</option>
                     </select>
                 </div>
+                
                 <div class="input-group">
-                    <label for="item-location">Ubicación del Hallazgo (Pabellón/Aula)</label>
-                    <input type="text" id="item-location" required placeholder="Ej. Cafetería central / Pabellón B - Piso 2">
+                    <label for="item-location">Referencia del Área (Pabellón/Aula)*</label>
+                    <input type="text" id="item-location" required placeholder="Ej. Cafetería Central / Pabellón B - Piso 2">
                 </div>
+                
                 <div class="input-group">
-                    <label for="item-desc">Descripción detallada</label>
-                    <textarea id="item-desc" rows="3" placeholder="Detalla el color, marca o señas particulares..."></textarea>
+                    <label for="item-desc">Detalles o Señas Particulares</label>
+                    <textarea id="item-desc" rows="2" placeholder="Color, marca o stickers para verificación..."></textarea>
                 </div>
-                <button type="submit" class="btn-primary">Publicar en el Plano Digital</button>
+
+                <button type="submit" class="btn-primary">Siguiente: Ubicar en el Plano 📍</button>
             </form>
         </div>
     </div>
 
-    <!-- Leaflet JS (Motor del mapa) -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="script.js"></script>
 </body>
