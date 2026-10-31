@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingOverlay = document.getElementById('loading-overlay');
     const logoutBtn = document.getElementById('logout-btn');
 
-    // Modales
+    // Modales y Controles
     const modalReport = document.getElementById('modal-report');
     const btnOpenReport = document.getElementById('btn-open-report');
     const closeReportModal = document.getElementById('close-report-modal');
@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let map = null;
     let markers = [];
 
-    // Objetos de ejemplo registrados en el Plano de AutoCAD (Y, X)
+    // Objetos de ejemplo
     const initialItems = [
         { id: 1, lat: 300, lng: 350, title: "Billetera de cuero marrón", type: "found", location: "Cafetería Central", category: "Llaves / Billeteras", date: "Hoy" },
         { id: 2, lat: 750, lng: 500, title: "Llaves de auto Toyota con llavero rojo", type: "found", location: "Pabellón A - Piso 1", category: "Llaves / Billeteras", date: "Ayer" },
@@ -34,37 +34,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Evento de Login
     if (loginForm) {
-        loginForm.addEventListener('submit', (evento) => {
-            evento.preventDefault();
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
 
-            const nombreInput = document.getElementById('nombre');
-            const apellidosInput = document.getElementById('apellidos');
-            const codigoInput = document.getElementById('codigo');
-
-            const nombre = nombreInput ? nombreInput.value.trim() : 'Estudiante';
-            const apellidos = apellidosInput ? apellidosInput.value.trim() : '';
-            const codigo = codigoInput ? codigoInput.value.trim() : '00000000';
+            const nombreVal = (document.getElementById('nombre')?.value || '').trim();
+            const apellidosVal = (document.getElementById('apellidos')?.value || '').trim();
+            const codigoVal = (document.getElementById('codigo')?.value || '').trim();
 
             if (loadingOverlay) loadingOverlay.classList.remove('hidden');
 
             setTimeout(() => {
-                const iniciales = (nombre.charAt(0) || 'U') + (apellidos.charAt(0) || 'C');
+                const init1 = nombreVal.charAt(0) || 'U';
+                const init2 = apellidosVal.charAt(0) || 'C';
 
-                if (displayName) displayName.textContent = `${nombre} ${apellidos}`;
-                if (displayCode) displayCode.textContent = `Cód: ${codigo}`;
-                if (welcomeMessage) welcomeMessage.textContent = `¡Hola, ${nombre}! 👋`;
-                if (profileAvatar) profileAvatar.textContent = iniciales.toUpperCase();
+                if (displayName) displayName.textContent = `${nombreVal} ${apellidosVal}`;
+                if (displayCode) displayCode.textContent = `Cód: ${codigoVal}`;
+                if (welcomeMessage) welcomeMessage.textContent = `¡Hola, ${nombreVal}! 👋`;
+                if (profileAvatar) profileAvatar.textContent = (init1 + init2).toUpperCase();
 
                 if (loadingOverlay) loadingOverlay.classList.add('hidden');
                 if (loginContainer) loginContainer.classList.add('hidden');
                 if (appContainer) appContainer.classList.remove('hidden');
 
-                initMap();
-            }, 1000);
+                try {
+                    initMap();
+                } catch (err) {
+                    console.error("Error al inicializar el mapa:", err);
+                }
+            }, 800);
         });
     }
 
-    // Función para Cargar el Plano Interactivo
+    // Configuración del Mapa
     function initMap() {
         if (map) return;
 
@@ -82,33 +83,36 @@ document.addEventListener('DOMContentLoaded', () => {
         renderMarkers('all');
 
         setTimeout(() => {
+            if (!map) return;
             map.invalidateSize();
             map.fitBounds(bounds);
-
-            const minZoomCalc = map.getBoundsZoom(bounds);
-            map.setMinZoom(minZoomCalc);
-            map.setMaxZoom(minZoomCalc + 3);
-        }, 250);
+            try {
+                const calculatedMinZoom = map.getBoundsZoom(bounds);
+                map.setMinZoom(calculatedMinZoom);
+                map.setMaxZoom(calculatedMinZoom + 3);
+            } catch (zErr) {
+                map.setMinZoom(-1);
+            }
+        }, 300);
     }
 
-    // Renderizar Marcadores
+    // Renderizado de Marcadores
     function renderMarkers(filterType) {
         markers.forEach(m => map.removeLayer(m));
         markers = [];
 
-        const filteredItems = filterType === 'all' 
+        const filtered = filterType === 'all' 
             ? initialItems 
             : initialItems.filter(item => item.type === filterType);
 
-        filteredItems.forEach(item => addMarkerToMap(item));
+        filtered.forEach(item => addMarkerToMap(item));
     }
 
-    // Agregar Marcador Individual
     function addMarkerToMap(item) {
-        const iconColor = item.type === 'found' ? 'green' : 'red';
+        const iconColor = item.type === 'found' ? '#16a34a' : '#dc2626';
         const customIcon = L.divIcon({
             className: 'custom-pin',
-            html: `<div style="background-color: ${iconColor === 'green' ? '#16a34a' : '#dc2626'}; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 8px rgba(0,0,0,0.4);"></div>`,
+            html: `<div style="background-color: ${iconColor}; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 8px rgba(0,0,0,0.4);"></div>`,
             iconSize: [20, 20]
         });
 
@@ -116,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const popupContent = `
             <div style="font-family: Roboto, sans-serif; padding: 4px;">
-                <span style="display:inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; color: white; background-color: ${item.type === 'found' ? '#16a34a' : '#dc2626'}; margin-bottom: 6px;">
+                <span style="display:inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; color: white; background-color: ${iconColor}; margin-bottom: 6px;">
                     ${item.type === 'found' ? 'ENCONTRADO' : 'PERDIDO'}
                 </span>
                 <h4 style="margin: 0 0 4px 0; color: #1e3a8a; font-size: 14px;">${item.title}</h4>
@@ -132,12 +136,12 @@ document.addEventListener('DOMContentLoaded', () => {
         markers.push(marker);
     }
 
-    // Filtros
+    // Eventos de Filtros
     filterChips.forEach(chip => {
         chip.addEventListener('click', (e) => {
             filterChips.forEach(c => c.classList.remove('active'));
-            e.target.classList.add('active');
-            const filterValue = e.target.getAttribute('data-filter');
+            e.currentTarget.classList.add('active');
+            const filterValue = e.currentTarget.getAttribute('data-filter');
             if (map) renderMarkers(filterValue);
         });
     });
@@ -150,7 +154,6 @@ document.addEventListener('DOMContentLoaded', () => {
         closeReportModal.addEventListener('click', () => modalReport.classList.add('hidden'));
     }
 
-    // Formulario de Reporte
     if (formReportItem) {
         formReportItem.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -183,7 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Cerrar sesión
+    // Cerrar Sesión
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
             appContainer.classList.add('hidden');
