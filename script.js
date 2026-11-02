@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentFilter = 'all';
 
     // Dimensiones virtuales del plano de AutoCAD
-    const bounds = [[0, 0], [1000, 1800]];
+    const bounds = [[0, 0], [1419, 2482]];
 
     // Almacenamiento local (Sesión de usuario) y estado global de reportes
     let reports = [];
