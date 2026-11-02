@@ -124,61 +124,58 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Inicialización del Mapa
-    function initMap() {
-        if (map) {
-            actualizarMapaYContadores();
-            return;
-        }
-
-        map = L.map('map', {
-            crs: L.CRS.Simple,
-            maxBounds: bounds,
-            maxBoundsViscosity: 1.0,
-            attributionControl: false
-        });
-
-        L.imageOverlay('plano-ucv.jpg', bounds).addTo(map);
-
-        map.on('click', (e) => {
-            if (!isPickingLocation || !pendingReportData) return;
-
-            const reportId = Date.now();
-            const newReport = {
-                id: reportId,
-                ...pendingReportData,
-                lat: Math.round(e.latlng.lat),
-                lng: Math.round(e.latlng.lng),
-                status: 'active',
-                pin: null,
-                claimContact: null,
-                claimAnswer: null,
-                claimUserCode: null,
-                userCode: currentUser.codigo,
-                userName: `${currentUser.nombre} ${currentUser.apellidos}`,
-                date: new Date().toLocaleDateString('es-PE', { hour: '2-digit', minute: '2-digit' })
-            };
-
-            reportsRef.child(reportId).set(newReport);
-
-            desactivarModoPicker();
-            alert('¡Reporte publicado con éxito en la nube!');
-        });
-
-        setTimeout(() => {
-            if (map) {
-                map.invalidateSize();
-                map.fitBounds(bounds);
-                try {
-                    const minZoomCalc = map.getBoundsZoom(bounds);
-                    map.setMinZoom(minZoomCalc);
-                    map.setMaxZoom(minZoomCalc + 3);
-                } catch (err) {
-                    map.setMinZoom(0);
-                }
-            }
-            actualizarMapaYContadores();
-        }, 300);
+function initMap() {
+    if (map) {
+        actualizarMapaYContadores();
+        return;
     }
+
+    map = L.map('map', {
+        crs: L.CRS.Simple,
+        maxBounds: bounds,
+        maxBoundsViscosity: 0.7,
+        attributionControl: false
+    });
+
+    L.imageOverlay('plano-ucv.jpg', bounds).addTo(map);
+
+    map.on('click', (e) => {
+        if (!isPickingLocation || !pendingReportData) return;
+
+        const reportId = Date.now();
+        const newReport = {
+            id: reportId,
+            ...pendingReportData,
+            lat: Math.round(e.latlng.lat),
+            lng: Math.round(e.latlng.lng),
+            status: 'active',
+            pin: null,
+            claimContact: null,
+            claimAnswer: null,
+            claimUserCode: null,
+            userCode: currentUser.codigo,
+            userName: `${currentUser.nombre} ${currentUser.apellidos}`,
+            date: new Date().toLocaleDateString('es-PE', { hour: '2-digit', minute: '2-digit' })
+        };
+
+        reportsRef.child(reportId).set(newReport);
+
+        desactivarModoPicker();
+        alert('¡Reporte publicado con éxito en la nube!');
+    });
+
+    setTimeout(() => {
+        if (map) {
+            map.invalidateSize();
+            // Calcula automáticamente el zoom para que todo el plano quepa completo en el recuadro
+            const minZoomCalc = map.getBoundsZoom(bounds, true);
+            map.setMinZoom(minZoomCalc - 1);
+            map.setMaxZoom(minZoomCalc + 4);
+            map.fitBounds(bounds);
+        }
+        actualizarMapaYContadores();
+    }, 300);
+}
 
     function actualizarMapaYContadores() {
         if (!map) return;
